@@ -58,7 +58,7 @@ class Communication(object):
 				self.ser.write("3000")
 			if on_off == 1:
 				self.ser.write("3001")
-		if wheel == "left":
+		if wheel == "right":
 			if on_off == 0:
 				self.ser.write("5000")
 			if on_off == 1:
