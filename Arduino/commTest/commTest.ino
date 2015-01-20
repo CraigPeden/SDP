@@ -32,6 +32,8 @@ byte ROT_MASK = 0b00100000;
 byte MOTOR_MASK = 0b00010000;
 byte LED_MASK = 0b00000000;
 
+/* PIN DEFINITION */
+int LED_PIN = 13;
 
 void setup()
 {
