@@ -28,41 +28,43 @@ class Communication(object):
 	7 | UNDEFINED				| Arguments = UNDEFINED		|
 
 	"""
-	def __init__(self):
+	def __init__(self, port, baudrate = 115200, sig = 0b11000000):
 		# Initialise a serial object, give it a port, then give it a baudrate
-		self.ser = serial.Serial()
-		self.ser.port = 0
-		self.ser.baudrate = 115200
+		self.ser = serial.Serial(port, baudrate)
 
-	def led(self, on_off):
-		if on_off == 0:
-			self.ser.write("0000")
-			time.sleep(1)
-		elif on_off == 1:
-			self.ser.write("0001")
-			time.sleep(1)
+		self.sig = sig
+		self.led_mask = 0b00000000
+		self.motor_mask = 0b00010000
+		self.rot_mask = 0b00100000
+		self.kicker_mask = 0b00110000
+
+	def write(self, mask, value = 0):
+		if value > 15 or value < 0:
+			raise Exception("Argument value out of range")
+		msg = self.sig | mask | value
+		self.ser.write(chr(msg))
+
+	def led(self, iteration):
+		self.write(self.led_mask, iteration)
 
 	def kicker(self):
-		self.ser.write("1001")
+		self.write(self.kicker_mask)
 		# Kicker recharge mechanism here
 
-	def rotation(self,wheel,angle):
-		if wheel == "left":
-			self.ser.write("2" + str(angle))
-		elif wheel == "right":
-			self.ser.write("4" + str(angle))
+	def rotation(self, angle):
+		if angle > 14 or angle < 0:
+			raise Exception("Rotation angle out of range")
+		else:
+			self.write(self.rot_mask, angle)
 
-	def drive(self,wheel,on_off):
-		if wheel == "left":
-			if on_off == 0:
-				self.ser.write("3000")
-			if on_off == 1:
-				self.ser.write("3001")
-		if wheel == "left":
-			if on_off == 0:
-				self.ser.write("5000")
-			if on_off == 1:
-				self.ser.write("54001")
+	def drive(self, front_wheel_status, back_wheel_status):
+		# status is an int value between -1 and 1
+		if front_wheel_status > 1 or front_wheel_status < -1 or back_wheel_status > 1 or back_wheel_status < -1:
+			raise Exception("Wheel status out of range")
+		else:
+			self.write(self.motor_mask, ((front_wheel_status + 1) << 2) + (back_wheel_status + 1))
+
+>>>>>>> basile-dev
 
 class Vision(object):
 	"""
@@ -82,6 +84,6 @@ class Movement(object):
 		# Maths to move the robot from it's current position to the ball
 		self.test = "hello"
 
-a = Communication()
-print a.ser
-#a.led()
+a = Communication("/dev/ttyACM0", 9600)
+a.led(5)
+a.drive(1,1)
