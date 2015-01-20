@@ -1,5 +1,7 @@
 import arduinoComm
-#initializing the object which will handle communications
+"""
+initializing the object which will handle communications
+"""
 comms = Communication()
 
 print("Press q to quit")
@@ -10,7 +12,10 @@ print("Press 4 to stop right motor")
 print("Press 5 to activate left rotational motor")
 print("Press 6 to activate right rotational motor")
 
-#starts listening for input
+"""
+starts listening for input
+"""
+
 input = ''
 while input!='q'
     input=raw_input()
@@ -27,7 +32,12 @@ while input!='q'
     elif input == '6'
          activate_right_rotational_motor(comms, 30)
 
-#methods which map the keybord input to the methods of the communications object
+
+
+
+"""
+methods which map the keybord input to the methods of the communications object
+"""
 
 def start_left_power_motor(comms):
 
