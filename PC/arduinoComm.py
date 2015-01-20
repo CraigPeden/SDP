@@ -64,8 +64,6 @@ class Communication(object):
 		else:
 			self.write(self.motor_mask, ((front_wheel_status + 1) << 2) + (back_wheel_status + 1))
 
->>>>>>> basile-dev
-
 class Vision(object):
 	"""
 	Class which will handle interfacing with the vision
