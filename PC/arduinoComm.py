@@ -62,7 +62,7 @@ class Communication(object):
 			if on_off == 0:
 				self.ser.write("5000")
 			if on_off == 1:
-				self.ser.write("54001")
+				self.ser.write("5001")
 
 class Vision(object):
 	"""
