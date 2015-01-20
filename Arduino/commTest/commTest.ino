@@ -39,8 +39,9 @@ void blinkLED(int n)
   while(n--)
   {
     digitalWrite(13, HIGH);
-    delay(100);
+    delay(500);
     digitalWrite(13, LOW);
+    delay(500);
   }
 }
 
@@ -48,13 +49,14 @@ void loop()
 {
   if (Serial.available()>=1) // character received
   {
+    blinkLED(15);
     msg = (char)Serial.read();
     Serial.print((char)msg);
-    if (msg == '0')  // turn LED off
+    if (msg == 0)  // turn LED off
     {
       blinkLED(1);
     }
-    else if (msg == '1')  // turn LED on
+    else if (msg == 1)  // turn LED on
     {
       blinkLED(2);
     }  
