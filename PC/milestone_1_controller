@@ -35,7 +35,7 @@ def start_left_power_motor(comms):
 	comms.drive("left", 1)
 
 
-def stor_left_power_motor(comms):
+def stop_left_power_motor(comms):
 
 	print 'Stopping Left Power Motor:\n'
 	comms.drive("left", 0)
@@ -47,7 +47,7 @@ def start_right_power_motor(comms):
 	comms.drive("right", 1)
 
 
-def stor_right_power_motor(comms):
+def stop_right_power_motor(comms):
 
 	print 'Stopping Right Power Motor:\n'
 	comms.drive("right", 0)
