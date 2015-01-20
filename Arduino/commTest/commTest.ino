@@ -24,6 +24,17 @@
 */
 
 byte msg;  // the command buffer
+byte SIG = 0b11000000;
+
+/* BIT MASKS FOR OPCODES */
+byte KICKER_MASK = 0b00110000;
+byte ROT_MASK = 0b00100000;
+byte MOTOR_MASK = 0b00010000;
+byte LED_MASK = 0b00000000;
+
+/* PIN DEFINITION */
+int LED_PIN = 13;
+
 void setup()
 {
   pinMode(13, OUTPUT);   // initialize pin 13 as digital output (LED)
@@ -34,30 +45,53 @@ void setup()
   Serial.print("STARTED");
 }
 
+int get_arg(byte msg)
+{
+  return (int)(msg & 0b00001111);
+}
+
 void blinkLED(int n)
 {
   while(n--)
   {
     digitalWrite(13, HIGH);
-    delay(100);
+    delay(500);
     digitalWrite(13, LOW);
+    delay(500);
   }
 }
 
 void loop()
 {
-  if (Serial.available()>=1) // character received
+  if (Serial.available()>0) // character received
   {
-    msg = (char)Serial.read();
-    Serial.print((char)msg);
-    if (msg == '0')  // turn LED off
+    msg = Serial.read();
+    
+    //check if it's our message
+    if((msg & SIG) == SIG)
     {
-      blinkLED(1);
+      Serial.println(msg, BIN);
+      Serial.println(KICKER_MASK, BIN);
+      Serial.println((msg & KICKER_MASK), BIN);
+     
+     if((msg & KICKER_MASK) == KICKER_MASK)
+     {
+       Serial.println("KICKER");
+     }
+     else if((msg & ROT_MASK) == ROT_MASK)
+     {
+       Serial.println("ROTATION");
+     }
+     else if((msg & MOTOR_MASK) == MOTOR_MASK)
+     {
+       Serial.println("MOTOR");
+     }   
+     else if((msg & LED_MASK) == LED_MASK)
+     {
+       Serial.println("LED");
+       blinkLED(get_arg(msg));
+     }
     }
-    else if (msg == '1')  // turn LED on
-    {
-      blinkLED(2);
-    }  
   }
 }
 
