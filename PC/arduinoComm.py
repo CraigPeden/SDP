@@ -41,8 +41,25 @@ class Communication(object):
 	def write(self, mask, value = 0):
 		if value > 15 or value < 0:
 			raise Exception("Argument value out of range")
+
 		msg = self.sig | mask | value
 		self.ser.write(chr(msg))
+
+		if (int((self.read(0.1)[0]).encode('hex'), 16) != msg):
+			raise Exception("Write failed")
+
+	def read(self, timeout,  buffer_size = 1):
+		start_time = time.time()
+		out = []
+
+		while (timeout > time.time() - start_time):
+			if (self.ser.inWaiting() > 0):
+				out.append(self.ser.read())
+
+				if len(out) == buffer_size:
+					return out
+
+		raise Exception("Read timed out")
 
 	def led(self, iteration):
 		self.write(self.led_mask, iteration)
@@ -83,5 +100,6 @@ class Movement(object):
 		self.test = "hello"
 
 a = Communication("/dev/ttyACM0", 9600)
-a.led(5)
+a.led(3)
+a.rotation(10)
 a.drive(1,1)
