@@ -7,27 +7,24 @@ class Communication(object):
 	bus which will transmit to the arduino
 
 	To save as much on arduino computation as possible, a protocol will be
-	defined here to allow a single string to contain both the operation and
+	defined here to allow a single byte to contain both the operation and
 	the required arguments.
 
-	8 bit string of ASCII characters
-	|	1 char	|	3 char	|
-	|	OPCODE	|	Argument|
+	Command byte:
+	|  2 bits  |  2 bits  |  4 bits  |
+	|   SIG    |  OPCODE  | ARGUMENT |
 
-	OPCODE is 0-padded to 3 chars.
-	ARGUMENT is 0-padded to 5 chars.
+	SIG is the signature for the communication.
+	OPCODE is a 2 bit unsigned int.
+	ARGUMENT is a 4 bit unsigned int.
 
 	OPCODES
-	0 |	LED 					| Arguments = 0/1 off/on 	|
-	1 | Kicker 					| Arguments = 1 to fire 	|
-	2 | Left Rotational Motor	| Arguments = 0-360 degrees	|
-	3 | Left Power Motor		| Arguments = 0/1 off/on 	|
-	4 | Right Rotational Motor	| Arguments = 0-360 degrees	|
-	5 | Right Power Motor		| Arguments = 0/1 off/on 	|
-	6 | UNDEFINED 				| Arguments = UNDEFINED		|
-	7 | UNDEFINED				| Arguments = UNDEFINED		|
-
+	0 |	LED 			 | Arguments = blinks     	  |
+	1 | Power Motor	     | Arguments = -1/0/1, -1/0/1 |
+	2 | Rotational Motor | Arguments = 0-14      	  |
+	3 | Kicker 			 | Arguments = 1 to fire 	  |
 	"""
+	
 	def __init__(self, port, baudrate = 115200, sig = 0b11000000):
 		# Initialise a serial object, give it a port, then give it a baudrate
 		self.ser = serial.Serial(port, baudrate)
@@ -38,11 +35,31 @@ class Communication(object):
 		self.rot_mask = 0b00100000
 		self.kicker_mask = 0b00110000
 
-	def write(self, mask, value = 0):
+	def write(self, mask, value = 0, attemps = 5):
 		if value > 15 or value < 0:
 			raise Exception("Argument value out of range")
+
 		msg = self.sig | mask | value
 		self.ser.write(chr(msg))
+
+		if (int((self.read()[0]).encode('hex'), 16) != msg):
+			if attemps > 0:
+				self.write(mask, value, attemps - 1)
+			else:
+				raise Exception("Write failed")
+
+	def read(self, timeout = 0.1,  buffer_size = 1):
+		start_time = time.time()
+		out = []
+
+		while (timeout > time.time() - start_time):
+			if (self.ser.inWaiting() > 0):
+				out.append(self.ser.read())
+
+				if len(out) == buffer_size:
+					return out
+
+		raise Exception("Read timed out")
 
 	def led(self, iteration):
 		self.write(self.led_mask, iteration)
@@ -57,12 +74,12 @@ class Communication(object):
 		else:
 			self.write(self.rot_mask, angle)
 
-	def drive(self, front_wheel_status, back_wheel_status):
+	def drive(self, left_wheel_status, right_wheel_status):
 		# status is an int value between -1 and 1
-		if front_wheel_status > 1 or front_wheel_status < -1 or back_wheel_status > 1 or back_wheel_status < -1:
+		if left_wheel_status > 1 or left_wheel_status < -1 or right_wheel_status > 1 or right_wheel_status < -1:
 			raise Exception("Wheel status out of range")
 		else:
-			self.write(self.motor_mask, ((front_wheel_status + 1) << 2) + (back_wheel_status + 1))
+			self.write(self.motor_mask, ((left_wheel_status + 1) << 2) + (right_wheel_status + 1))
 
 class Vision(object):
 	"""
@@ -82,6 +99,7 @@ class Movement(object):
 		# Maths to move the robot from it's current position to the ball
 		self.test = "hello"
 
-a = Communication("/dev/ttyACM0", 9600)
-a.led(5)
-a.drive(1,1)
+#a = Communication("/dev/ttyACM0", 9600)
+#a.led(3)
+#a.rotation(10)
+#a.drive(1,1)
