@@ -19,10 +19,10 @@ class Communication(object):
 	ARGUMENT is a 4 bit unsigned int.
 
 	OPCODES
-	0 |	LED 			 | Arguments = blinks     	  |
-	1 | Power Motor	     | Arguments = -1/0/1, -1/0/1 |
-	2 | Rotational Motor | Arguments = 0-14      	  |
-	3 | Kicker 			 | Arguments = 1 to fire 	  |
+	0 |	Left Power Motor  | Arguments = 0-15 (7-8: STOP)|
+	1 | Right Power Motor | Arguments = 0-15 (7-8: STOP)|
+	2 | Rotational Motor  | Arguments = 0-14      	    |
+	3 | Kicker 			  | Arguments = 1 to fire 	    |
 	"""
 	
 	def __init__(self, port, baudrate = 115200, sig = 0b11000000):
@@ -30,8 +30,8 @@ class Communication(object):
 		self.ser = serial.Serial(port, baudrate)
 
 		self.sig = sig
-		self.led_mask = 0b00000000
-		self.motor_mask = 0b00010000
+		self.left_motor_mask = 0b00000000
+		self.right_motor_mask = 0b00010000
 		self.rot_mask = 0b00100000
 		self.kicker_mask = 0b00110000
 
@@ -41,12 +41,13 @@ class Communication(object):
 
 		msg = self.sig | mask | value
 		self.ser.write(chr(msg))
+		print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
 
-		if (int((self.read()[0]).encode('hex'), 16) != msg):
-			if attemps > 0:
-				self.write(mask, value, attemps - 1)
-			else:
-				raise Exception("Write failed")
+		# if (int((self.read()[0]).encode('hex'), 16) != msg):
+		# 	if attemps > 0:
+		# 		self.write(mask, value, attemps - 1)
+		# 	else:
+		# 		raise Exception("Write failed")
 
 	def read(self, timeout = 0.1,  buffer_size = 1):
 		start_time = time.time()
@@ -61,9 +62,6 @@ class Communication(object):
 
 		raise Exception("Read timed out")
 
-	def led(self, iteration):
-		self.write(self.led_mask, iteration)
-
 	def kicker(self):
 		self.write(self.kicker_mask)
 		# Kicker recharge mechanism here
@@ -74,12 +72,24 @@ class Communication(object):
 		else:
 			self.write(self.rot_mask, angle)
 
-	def drive(self, left_wheel_status, right_wheel_status):
-		# status is an int value between -1 and 1
-		if left_wheel_status > 1 or left_wheel_status < -1 or right_wheel_status > 1 or right_wheel_status < -1:
-			raise Exception("Wheel status out of range")
+	def stop(self):
+		self.write(self.left_motor_mask, 7)
+		self.write(self.right_motor_mask, 7)
+
+	def drive(self, left_wheel_speed, right_wheel_speed, left_forward = True, right_forward = True):
+		# speed is an int value between 0 and 7
+		if left_wheel_speed > 7 or left_wheel_speed < 0 or right_wheel_speed > 7 or right_wheel_speed < 0:
+			raise Exception("Wheel speed out of range")
 		else:
-			self.write(self.motor_mask, ((left_wheel_status + 1) << 2) + (right_wheel_status + 1))
+			if left_forward:
+				self.write(self.left_motor_mask, left_wheel_speed + 8)
+			else:
+				self.write(self.left_motor_mask, 8 - left_wheel_speed)
+
+			if right_forward:
+				self.write(self.right_motor_mask, right_wheel_speed + 8)
+			else:
+				self.write(self.right_motor_mask, 8 - right_wheel_speed)
 
 class Vision(object):
 	"""
@@ -99,7 +109,4 @@ class Movement(object):
 		# Maths to move the robot from it's current position to the ball
 		self.test = "hello"
 
-#a = Communication("/dev/ttyACM0", 9600)
-#a.led(3)
-#a.rotation(10)
-#a.drive(1,1)
+a = Communication("/dev/ttyACM0", 9600)
