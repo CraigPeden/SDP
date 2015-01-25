@@ -87,9 +87,9 @@ class Communication(object):
 				self.write(self.left_motor_mask, 8 - left_wheel_speed)
 
 			if right_forward:
-				self.write(self.right_motor_mask, right_wheel_speed + 8)
-			else:
 				self.write(self.right_motor_mask, 8 - right_wheel_speed)
+			else:
+				self.write(self.right_motor_mask, right_wheel_speed + 8)
 
 class Vision(object):
 	"""
@@ -108,5 +108,3 @@ class Movement(object):
 	def movement(self, robot_position, ball_position):
 		# Maths to move the robot from it's current position to the ball
 		self.test = "hello"
-
-a = Communication("/dev/ttyACM0", 9600)

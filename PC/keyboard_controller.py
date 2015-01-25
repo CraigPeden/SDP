@@ -41,11 +41,11 @@ while key != ord('q') and key != ord('Q'):
             
         if key == curses.KEY_LEFT: 
             stdscr.addstr(10, 9, "LEFT     ")
-            comms.drive(3, 3, False, True)
+            comms.drive(7, 7, False, True)
             
         if key == curses.KEY_RIGHT: 
             stdscr.addstr(10, 9, "RIGHT    ")
-            comms.drive(3, 3, True, False)
+            comms.drive(7, 7, True, False)
 
         if key == curses.KEY_BACKSPACE:
             stdscr.addstr(10, 9, "BACKSPACE")
