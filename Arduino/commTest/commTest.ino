@@ -23,6 +23,9 @@
 	7 | UNDEFINED			| Arguments = UNDEFINED		|
 */
 
+#include "SDPArduino.h"
+#include <Wire.h>
+
 byte msg;  // the command buffer
 byte SIG = 0b11000000;
 
@@ -37,12 +40,9 @@ int LED_PIN = 13;
 
 void setup()
 {
-  pinMode(13, OUTPUT);   // initialize pin 13 as digital output (LED)
-  pinMode(8, OUTPUT);    // initialize pin 8 to control the radio
-  digitalWrite(8, HIGH); // select the radio
-  Serial.begin(9600);    // start the serial port at 115200 baud (correct for XinoRF and RFu, if using XRF + Arduino you might need 9600)
-  
-  Serial.print("STARTED");
+  SDPsetup();
+  pinMode(13, OUTPUT);   // initialize pin 13 as digital output (LED)  
+  Serial.println("STARTED_OUR");
 }
 
 int get_arg(byte msg)
@@ -63,16 +63,16 @@ void blinkLED(int n)
 
 void loop()
 {
-  if (Serial.available()>0) // character received
+ /* if (Serial.available()>0) // character received
   {
     msg = Serial.read();
     
     //check if it's our message
     if((msg & SIG) == SIG)
     {
-      Serial.println(msg, BIN);
-      Serial.println(KICKER_MASK, BIN);
-      Serial.println((msg & KICKER_MASK), BIN);
+    //  Serial.println(msg, BIN);
+      //Serial.println(KICKER_MASK, BIN);
+      //Serial.println((msg & KICKER_MASK), BIN);
      
      if((msg & KICKER_MASK) == KICKER_MASK)
      {
@@ -89,6 +89,41 @@ void loop()
      else if((msg & LED_MASK) == LED_MASK)
      {
        Serial.println("LED");
+       blinkLED(get_arg(msg));
+     }
+    }
+  }*/
+}
+
+void serialEvent() {
+ if (Serial.available()>0) // character received
+  {
+    msg = Serial.read();
+    
+    //check if it's our message
+    if((msg & SIG) == SIG)
+    {
+      Serial.write(msg);
+      //Serial.println(KICKER_MASK, BIN);
+      //Serial.println((msg & KICKER_MASK), BIN);
+     
+     if((msg & KICKER_MASK) == KICKER_MASK)
+     {
+      // Serial.println("KICKER");
+     }
+     else if((msg & ROT_MASK) == ROT_MASK)
+     {
+       //Serial.println("ROTATION");
+     }
+     else if((msg & MOTOR_MASK) == MOTOR_MASK)
+     {
+       motorForward(0, 50);
+       motorForward(1, 50);
+       //Serial.println("MOTOR");
+     }   
+     else if((msg & LED_MASK) == LED_MASK)
+     {
+       //Serial.println("LED");
        blinkLED(get_arg(msg));
      }
     }
