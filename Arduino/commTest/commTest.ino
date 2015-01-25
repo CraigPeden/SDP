@@ -32,8 +32,8 @@ byte SIG = 0b11000000;
 /* BIT MASKS FOR OPCODES */
 byte KICKER_MASK = 0b00110000;
 byte ROT_MASK = 0b00100000;
-byte MOTOR_MASK = 0b00010000;
-byte LED_MASK = 0b00000000;
+byte RIGHT_MOTOR_MASK = 0b00010000;
+byte LEFT_MOTOR_MASK = 0b00000000;
 
 /* PIN DEFINITION */
 int LED_PIN = 13;
@@ -95,6 +95,30 @@ void loop()
   }*/
 }
 
+void controlMotor(int motor, byte msg)
+{
+  int motorGear = get_arg(msg);
+  
+  if(motorGear == 7 || motorGear == 8)
+  {
+     motorStop(motor);
+  }
+  else
+  {
+    if(motorGear > 7)
+    {
+      motorGear = 15 - motorGear;
+      int motorSpeed = 100 - ((motorGear * 100) / 7);
+      motorForward(motor, motorSpeed);
+    }
+    else    
+    {
+      int motorSpeed = 100 - ((motorGear * 100) / 7);
+      motorBackward(motor, motorSpeed);
+    }
+  }
+}
+
 void serialEvent() {
  if (Serial.available()>0) // character received
   {
@@ -115,16 +139,15 @@ void serialEvent() {
      {
        //Serial.println("ROTATION");
      }
-     else if((msg & MOTOR_MASK) == MOTOR_MASK)
-     {
-       motorForward(0, 50);
-       motorForward(1, 50);
+     else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
+     {        
        //Serial.println("MOTOR");
+       controlMotor(1, msg);
      }   
-     else if((msg & LED_MASK) == LED_MASK)
+     else if((msg & LEFT_MOTOR_MASK) == LEFT_MOTOR_MASK)
      {
        //Serial.println("LED");
-       blinkLED(get_arg(msg));
+       controlMotor(0, msg);
      }
     }
   }
