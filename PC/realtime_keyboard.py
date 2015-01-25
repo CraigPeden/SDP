@@ -4,18 +4,20 @@ def onKeyPress(event):
     text.insert('end', 'You pressed %s\n' % (event.char, ))
 
 def leftKey(event):
-    text.insert('end', 'Left arrow')
+    text.insert('end', 'Left arrow\n')
 
 def rightKey(event):
-    text.insert('end', 'Right arrow')
+    text.insert('end', 'Right arrow\n')
 
 def upKey(event):
-    text.insert('end', 'Up arrow')
+    text.insert('end', 'Up arrow\n')
 
 def downKey(event):
-    text.insert('end', 'Down arrow')
+    text.insert('end', 'Down arrow\n')
 
-
+def keyUP(event):
+    text.insert('end', 'Key UP\n')
+    print event.state
 
 
 root = tk.Tk()
@@ -27,5 +29,6 @@ root.bind('<Left>', leftKey)
 root.bind('<Right>', rightKey)
 root.bind('<Up>', upKey)
 root.bind('<Down>', downKey)
+root.bind('<KeyRelease>', keyUP)
 
 root.mainloop()
