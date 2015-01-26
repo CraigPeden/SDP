@@ -25,25 +25,50 @@ byte ROT_MASK = 0b00100000;
 byte RIGHT_MOTOR_MASK = 0b00010000;
 byte LEFT_MOTOR_MASK = 0b00000000;
 
+/* Timed action */
+unsigned long time = millis();
+
+boolean kickerAction = false;
+unsigned long kickerTime = millis();
+
 void setup()
 {
   SDPsetup(); 
   Serial.println("Robot started");
 }
 
-int get_arg(byte msg)
+int getArg(byte msg)
 {
   return (int)(msg & 0b00001111);
 }
 
-void loop()
+void kickerStop()
 {
+    kickerAction = false;
+    motorStop(2);
+}
 
+void controlKicker(int value)
+{
+  if(value == 0)
+  {
+    /* Grab */
+    kickerTime = millis() + 500;
+    kickerAction = true;
+    motorForward(2,100);
+  }
+  else if(value == 1)
+  {
+    /* Kick */
+    kickerTime = millis() + 500;
+    kickerAction = true;
+    motorBackward(2,100);
+  }
 }
 
 void controlMotor(int motor, byte msg)
 {
-  int motorGear = get_arg(msg);
+  int motorGear = getArg(msg);
   
   if(motorGear == 7 || motorGear == 8)
   {
@@ -65,6 +90,19 @@ void controlMotor(int motor, byte msg)
   }
 }
 
+void loop()
+{
+  /* Update time and check if action is needed */
+  time = millis();
+  
+  /* If the kicker flag kickerAction is set,
+  check if the time is reached. */
+  if(kickerAction && (kickerTime < time))
+  {
+    kickerStop();
+  }
+}
+
 void serialEvent() {
  if (Serial.available()>0) // character received
   {
@@ -80,6 +118,7 @@ void serialEvent() {
      if((msg & KICKER_MASK) == KICKER_MASK)
      {
       // Serial.println("KICKER");
+      controlKicker(getArg(msg));
      }
      else if((msg & ROT_MASK) == ROT_MASK)
      {

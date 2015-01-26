@@ -41,7 +41,7 @@ class Communication(object):
 
 		msg = self.sig | mask | value
 		self.ser.write(chr(msg))
-		print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
+		#print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
 
 		# if (int((self.read()[0]).encode('hex'), 16) != msg):
 		# 	if attemps > 0:
@@ -62,9 +62,11 @@ class Communication(object):
 
 		raise Exception("Read timed out")
 
-	def kicker(self):
-		self.write(self.kicker_mask)
-		# Kicker recharge mechanism here
+	def grab(self):
+		self.write(self.kicker_mask, 0)
+
+	def kick(self):
+		self.write(self.kicker_mask, 1)
 
 	def rotation(self, angle):
 		if angle > 14 or angle < 0:
