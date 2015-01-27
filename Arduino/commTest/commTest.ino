@@ -26,8 +26,6 @@ byte RIGHT_MOTOR_MASK = 0b00010000;
 byte LEFT_MOTOR_MASK = 0b00000000;
 
 /* Timed action */
-unsigned long time = millis();
-
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
 
@@ -92,14 +90,12 @@ void controlMotor(int motor, byte msg)
 
 void loop()
 {
-  /* Update time and check if action is needed */
-  time = millis();
-  
   /* If the kicker flag kickerAction is set,
   check if the time is reached. */
-  if(kickerAction && (kickerTime < time))
+  if(kickerAction && (kickerTime < millis()))
   {
     kickerStop();
+    Serial.println("Stop kicker");
   }
 }
 
