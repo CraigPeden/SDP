@@ -40,7 +40,7 @@ while key != ord('q') and key != ord('Q'):
         stdscr.addstr(10, 9, "LEFT     ")
         comms.drive(7, 7, False, True)
         
-    if key == curses.KEY_RIGHT: 
+    if key == curses.KEY_RIGHT:
         stdscr.addstr(10, 9, "RIGHT    ")
         comms.drive(7, 7, True, False)
 
