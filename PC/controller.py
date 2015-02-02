@@ -8,7 +8,6 @@ import cv2
 import serial
 import warnings
 import time
-import arduinoComm
 
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -41,7 +40,7 @@ class Controller:
         self.pitch = pitch
 
         # Set up the Arduino communications
-        self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+        self.arduino = Arduino(comm_port, 115200, 1, comms)
 
         # Set up camera for frames
         self.camera = Camera(port=video_port, pitch=self.pitch)
@@ -176,17 +175,10 @@ class Defender_Controller(Robot_Controller):
         """
 
         if 'turn_90' in action:
-	    orientation = int(action['turn_90']))
-            comm.drive(3, 3)
-            time.sleep(1)
-	""" Turn 90 degrees anti-clockwise"""
-	    if orientation == -1
-		comm.rotation(4)
-	""" Turn 90 degreesclockwise"""
-	    if orientation == 1
-		comm.rotation(12)
-           time.sleep(1)
-	   comm.kick()
+            comm.write('D_RUN_ENGINE %d %d\n' % (0, 0))
+            time.sleep(0.2)
+            comm.write('D_RUN_SHOOT %d\n' % int(action['turn_90']))
+            time.sleep(2.2)
 
         #print action
         left_motor = int(action['left_motor'])
@@ -197,7 +189,7 @@ class Defender_Controller(Robot_Controller):
         comm.write('D_RUN_ENGINE %d %d\n' % (left_motor, right_motor))
         if action['kicker'] != 0:
             try:
-                comm.kick()
+                comm.write('D_RUN_KICK\n')
                 time.sleep(0.5)
             except StandardError:
                 pass
@@ -254,6 +246,37 @@ class Attacker_Controller(Robot_Controller):
         comm.write('A_RUN_ENGINE %d %d\n' % (0, 0))
 
 
+class Arduino:
+
+    def __init__(self, port, rate, timeOut, comms):
+        self.serial = None
+        self.comms = comms
+        self.port = port
+        self.rate = rate
+        self.timeout = timeOut
+        self.setComms(comms)
+
+    def setComms(self, comms):
+        if comms > 0:
+            self.comms = 1
+            if self.serial is None:
+                try:
+                    self.serial = serial.Serial(self.port, self.rate, timeout=self.timeout)
+                except:
+                    print "No Arduino detected!"
+                    print "Continuing without comms."
+                    self.comms = 0
+                    #raise
+        else:
+            #self.write('A_RUN_KICK\n')
+            self.write('A_RUN_ENGINE %d %d\n' % (0, 0))
+            #self.write('D_RUN_KICK\n')
+            self.write('D_RUN_ENGINE %d %d\n' % (0, 0))
+            self.comms = 0
+
+    def write(self, string):
+        if self.comms == 1:
+            self.serial.write(string)
 
 
 if __name__ == '__main__':
