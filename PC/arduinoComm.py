@@ -11,10 +11,11 @@ class Communication(object):
 	the required arguments.
 
 	Command byte:
-	|  2 bits  |  2 bits  |  4 bits  |
-	| CHECKSUM |  OPCODE  | ARGUMENT |
+	|  1 bit  |  1 bit   |  2 bits  |  4 bits  |
+	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
 
-	CHECKSUM is ((OPCODE ARGUMENT) + 1) % 4 
+	SIG is the signature of our communication, the value is 1
+	CHECKSUM is (OPCODE ARGUMENT) % 2
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -34,12 +35,12 @@ class Communication(object):
 		self.rotation = 0b00100000
 		self.kicker = 0b00110000
 
-	def write(self, opcode, value = 0, attemps = 5):
+	def write(self, opcode, value = 0, attemps = 5, signature=1):
 		if value > 15 or value < 0:
 			raise Exception("Argument value out of range")
 
 		# Creating the checksum and composing the message
-		msg = (((opcode | value) + 1) % 4 << 6) | opcode | value
+		msg = (signature << 7) | ((opcode | value) % 2 << 6) | opcode | value
 		self.ser.write(chr(msg))
 
 		print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))

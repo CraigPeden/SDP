@@ -1,8 +1,9 @@
 /*      Command byte:
-	|  2 bits  |  2 bits  |  4 bits  |
-	| CHECKSUM |  OPCODE  | ARGUMENT |
+	|  1 bit  |  1 bit   |  2 bits  |  4 bits  |
+	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
 
-	CHECKSUM is (OPCODE ARGUMENT) % 4
+	SIG is the signature of our communication, the value is 1
+	CHECKSUM is (OPCODE ARGUMENT) % 2
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -17,7 +18,8 @@
 #include <Wire.h>
 
 byte msg;  // the command buffer
-byte CHECKSUM_MASK = 0b11000000;
+byte SIG_MASK = 0b10000000;
+byte CHECKSUM_MASK = 0b01000000;
 byte PAYLOAD_MASK = 0b00111111;
 
 /* BIT MASKS FOR OPCODES */
@@ -105,8 +107,9 @@ void serialEvent() {
   {
     msg = Serial.read();
     
-    //check for the integrity of the message
-    if(((int) (msg & PAYLOAD_MASK) + 1) % 4 == (int) ((msg & CHECKSUM_MASK) >> 6))
+    // Check for the signature and for the integrity of the message
+    if((msg & SIG_MASK) == SIG_MASK &&
+       ((int) (msg & PAYLOAD_MASK) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
     {
       Serial.write(msg);
       
