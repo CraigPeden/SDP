@@ -1,8 +1,9 @@
 /*      Command byte:
-	|  2 bits  |  2 bits  |  4 bits  |
-	|   SIG    |  OPCODE  | ARGUMENT |
+	|  1 bit  |  1 bit   |  2 bits  |  4 bits  |
+	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
 
-	SIG is the signature for the communication.
+	SIG is the signature of our communication, the value is 1
+	CHECKSUM is (OPCODE ARGUMENT) % 2
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -17,7 +18,9 @@
 #include <Wire.h>
 
 byte msg;  // the command buffer
-byte SIG = 0b11000000;
+byte SIG_MASK = 0b10000000;
+byte CHECKSUM_MASK = 0b01000000;
+byte PAYLOAD_MASK = 0b00111111;
 
 /* BIT MASKS FOR OPCODES */
 byte KICKER_MASK = 0b00110000;
@@ -104,32 +107,35 @@ void serialEvent() {
   {
     msg = Serial.read();
     
-    //check if it's our message
-    if((msg & SIG) == SIG)
+    // Check for the signature and for the integrity of the message
+    if((msg & SIG_MASK) == SIG_MASK &&
+       ((int) (msg & PAYLOAD_MASK) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
     {
       Serial.write(msg);
-      //Serial.println(KICKER_MASK, BIN);
-      //Serial.println((msg & KICKER_MASK), BIN);
-     
-     if((msg & KICKER_MASK) == KICKER_MASK)
-     {
-      // Serial.println("KICKER");
-      controlKicker(getArg(msg));
-     }
-     else if((msg & ROT_MASK) == ROT_MASK)
-     {
-       //Serial.println("ROTATION");
-     }
-     else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
-     {        
-       //Serial.println("MOTOR");
-       controlMotor(0, msg);
-     }   
-     else if((msg & LEFT_MOTOR_MASK) == LEFT_MOTOR_MASK)
-     {
-       //Serial.println("LED");
-       controlMotor(1, msg);
-     }
+      
+      if((msg & KICKER_MASK) == KICKER_MASK)
+      {
+        // Serial.println("KICKER");
+        controlKicker(getArg(msg));
+      }
+      else if((msg & ROT_MASK) == ROT_MASK)
+      {
+        //Serial.println("ROTATION");
+      }
+      else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
+      {        
+        //Serial.println("MOTOR");
+        controlMotor(0, msg);
+      }
+      else if((msg & LEFT_MOTOR_MASK) == LEFT_MOTOR_MASK)
+      {
+        //Serial.println("LED");
+        controlMotor(1, msg);
+      }
+    }
+    else
+    {
+      Serial.write("Integrity check failed.");
     }
   }
 }

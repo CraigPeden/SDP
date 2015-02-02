@@ -2,14 +2,13 @@ import arduinoComm
 import time
 import curses
 
+# Initializing the object which will handle communications
+comms = arduinoComm.Communication("/dev/ttyACM0", 9600)
 
 # Initializing the screen
 stdscr = curses.initscr()
 curses.cbreak()
 stdscr.keypad(1)
-
-# Initializing the object which will handle communications
-comms = arduinoComm.Communication("/dev/ttyACM0", 9600)
 
 # Setup screen
 stdscr.addstr(0,0,"Q          : quit")
@@ -34,15 +33,15 @@ while key != ord('q') and key != ord('Q'):
 
     if key == curses.KEY_DOWN: 
         stdscr.addstr(10, 9, "DOWN     ")
-        comms.drive(7,7, False, False)
+        comms.drive(-7,-7)
         
     if key == curses.KEY_LEFT: 
         stdscr.addstr(10, 9, "LEFT     ")
-        comms.drive(7, 7, False, True)
+        comms.drive(-7, 7)
         
     if key == curses.KEY_RIGHT:
         stdscr.addstr(10, 9, "RIGHT    ")
-        comms.drive(7, 7, True, False)
+        comms.drive(7, -7)
 
     if key == ord(' '):
         stdscr.addstr(10, 9, "SPACE    ")
