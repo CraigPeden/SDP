@@ -12,9 +12,9 @@ class Communication(object):
 
 	Command byte:
 	|  2 bits  |  2 bits  |  4 bits  |
-	|   SIG    |  OPCODE  | ARGUMENT |
+	| CHECKSUM |  OPCODE  | ARGUMENT |
 
-	SIG is the signature for the communication.
+	CHECKSUM is ((OPCODE ARGUMENT) + 1) % 4 
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -25,23 +25,24 @@ class Communication(object):
 	3 | Kicker 			  | Arguments = 1 to fire 	    |
 	"""
 	
-	def __init__(self, port, baudrate = 115200, sig = 0b11000000):
+	def __init__(self, port, baudrate = 115200):
 		# Initialise a serial object, give it a port, then give it a baudrate
 		self.ser = serial.Serial(port, baudrate)
 
-		self.sig = sig
-		self.left_motor_mask = 0b00000000
-		self.right_motor_mask = 0b00010000
-		self.rot_mask = 0b00100000
-		self.kicker_mask = 0b00110000
+		self.left_motor = 0b00000000
+		self.right_motor = 0b00010000
+		self.rotation = 0b00100000
+		self.kicker = 0b00110000
 
-	def write(self, mask, value = 0, attemps = 5):
+	def write(self, opcode, value = 0, attemps = 5):
 		if value > 15 or value < 0:
 			raise Exception("Argument value out of range")
 
-		msg = self.sig | mask | value
+		# Creating the checksum and composing the message
+		msg = (((opcode | value) + 1) % 4 << 6) | opcode | value
 		self.ser.write(chr(msg))
-		#print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
+
+		print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
 
 		# if (int((self.read()[0]).encode('hex'), 16) != msg):
 		# 	if attemps > 0:
@@ -63,35 +64,35 @@ class Communication(object):
 		raise Exception("Read timed out")
 
 	def grab(self):
-		self.write(self.kicker_mask, 0)
+		self.write(self.kicker, 0)
 
 	def kick(self):
-		self.write(self.kicker_mask, 1)
+		self.write(self.kicker, 1)
 
 	def rotation(self, angle):
 		if angle > 14 or angle < 0:
 			raise Exception("Rotation angle out of range")
 		else:
-			self.write(self.rot_mask, angle)
+			self.write(self.rotation, angle)
 
 	def stop(self):
-		self.write(self.left_motor_mask, 7)
-		self.write(self.right_motor_mask, 7)
+		self.write(self.left_motor, 7)
+		self.write(self.right_motor, 7)
 
-	def drive(self, left_wheel_speed, right_wheel_speed, left_forward = True, right_forward = True):
-		# speed is an int value between 0 and 7
-		if left_wheel_speed > 7 or left_wheel_speed < 0 or right_wheel_speed > 7 or right_wheel_speed < 0:
+	def drive(self, left_wheel_speed, right_wheel_speed):
+		# speed is an int value between -7 and 7
+		if left_wheel_speed > 7 or left_wheel_speed < -7 or right_wheel_speed > 7 or right_wheel_speed < -7:
 			raise Exception("Wheel speed out of range")
 		else:
-			if left_forward:
-				self.write(self.left_motor_mask, left_wheel_speed + 8)
+			if left_wheel_speed > 0:
+				self.write(self.left_motor, left_wheel_speed + 8)
 			else:
-				self.write(self.left_motor_mask, 8 - left_wheel_speed)
+				self.write(self.left_motor, left_wheel_speed + 8)
 
-			if right_forward:
-				self.write(self.right_motor_mask, 8 - right_wheel_speed)
+			if right_wheel_speed > 0:
+				self.write(self.right_motor, 8 - right_wheel_speed)
 			else:
-				self.write(self.right_motor_mask, right_wheel_speed + 8)
+				self.write(self.right_motor, 8 - right_wheel_speed)
 
 class Vision(object):
 	"""
