@@ -43,7 +43,7 @@ class Communication(object):
 		msg = (signature << 7) | ((opcode | value) % 2 << 6) | opcode | value
 		self.ser.write(chr(msg))
 
-		print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
+		#print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
 
 		# if (int((self.read()[0]).encode('hex'), 16) != msg):
 		# 	if attemps > 0:
