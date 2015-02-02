@@ -174,39 +174,35 @@ class Defender_Controller(Robot_Controller):
         """
         Execute robot action.
         """
-
         if 'turn_90' in action:
-            comm.drive(3, 3)
-            orientation == int(action['turn_90'])
+            comm.drive(-3, 3)
             time.sleep(1)
-            if orientation == -1:
-                comm.rotation(4)
-            elif orientation == 1:
-                comm.rotation(12)
             comm.kick()
             time.sleep(1)
-
-        #print action
-        left_motor = int(action['left_motor'])
-        right_motor = int(action['right_motor'])
-        speed = action['speed']
-
-        comm.drive(speed, speed)
-        comm.drive(left_motor, right_motor)
-        if action['kicker'] != 0:
-            try:
-                comm.kick()
-                time.sleep(0.5)
-            except StandardError:
-                pass
-        elif action['catcher'] != 0:
-            try:
-                comm.grab()
-            except StandardError:
-                pass
+        else:
+            comm.drive(3, 3)
+	    time.sleep(1)
+            if action['kicker'] != 0:
+                try:
+                    comm.drive(3, 3)
+		    time.sleep(1)
+		    comm.kick()
+                except StandardError:
+                    pass
+            elif action['catcher'] != 0:
+                try:
+                    comm.drive(3, 3)
+		    time.sleep(1)
+		    comm.grab()
+                except StandardError:
+                    pass
 
     def shutdown(self, comm):
         comm.stop()
+
+    def shutdown(self, comm):
+        comm.write('D_RUN_KICK\n')
+        comm.write('D_RUN_ENGINE %d %d\n' % (0, 0))
 
 
 class Attacker_Controller(Robot_Controller):
@@ -225,39 +221,63 @@ class Attacker_Controller(Robot_Controller):
         Execute robot action.
         """
         if 'turn_90' in action:
-            comm.drive(3, 3)
-            orientation == int(action['turn_90'])
+            comm.drive(-3, 3)
             time.sleep(1)
-            if orientation == -1:
-                comm.rotation(4)
-            elif orientation == 1:
-                comm.rotation(12)
             comm.kick()
             time.sleep(1)
-
         else:
-            left_motor = int(action['left_motor'])
-            right_motor = int(action['right_motor'])
-            speed = action['speed']
-
-            comm.drive(speed, speed)
-            comm.drive(left_motor, right_motor)
+            comm.drive(3, 3)
+	    time.sleep(1)
             if action['kicker'] != 0:
                 try:
-                    comm.kick()
-                    time.sleep(0.5)
+                    comm.drive(3, 3)
+		    time.sleep(1)
+		    comm.kick()
                 except StandardError:
                     pass
             elif action['catcher'] != 0:
                 try:
-                    comm.grab()
+                    comm.drive(3, 3)
+		    time.sleep(1)
+		    comm.grab()
                 except StandardError:
                     pass
 
     def shutdown(self, comm):
-        comm.write('A_RUN_KICK\n')
-        comm.write('A_RUN_ENGINE %d %d\n' % (0, 0))
+        comm.stop()
 
+
+class Arduino:
+
+    def __init__(self, port, rate, timeOut, comms):
+        self.serial = None
+        self.comms = comms
+        self.port = port
+        self.rate = rate
+        self.timeout = timeOut
+        self.setComms(comms)
+
+    def setComms(self, comms):
+        if comms > 0:
+            self.comms = 1
+            if self.serial is None:
+                try:
+                    self.serial = serial.Serial(self.port, self.rate, timeout=self.timeout)
+                except:
+                    print "No Arduino detected!"
+                    print "Continuing without comms."
+                    self.comms = 0
+                    #raise
+        else:
+            #self.write('A_RUN_KICK\n')
+            self.write('A_RUN_ENGINE %d %d\n' % (0, 0))
+            #self.write('D_RUN_KICK\n')
+            self.write('D_RUN_ENGINE %d %d\n' % (0, 0))
+            self.comms = 0
+
+    def write(self, string):
+        if self.comms == 1:
+            self.serial.write(string)
 
 
 if __name__ == '__main__':
