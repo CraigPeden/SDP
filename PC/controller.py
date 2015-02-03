@@ -9,6 +9,7 @@ import serial
 import warnings
 import time
 import arduinoComm
+from test.test_optparse import DurationOption
 
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -173,32 +174,34 @@ class Defender_Controller(Robot_Controller):
     def execute(self, comm, action):
         """
         Execute robot action.
+           return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
         """
-        if 'turn_90' in action:
-            comm.drive(-3, 3)
-            time.sleep(1)
-            comm.kick()
-            time.sleep(1)
-        else:
-            comm.drive(3, 3)
-	    time.sleep(1)
-            if action['kicker'] != 0:
-                try:
-                    comm.drive(3, 3)
-		    time.sleep(1)
-		    comm.kick()
-                except StandardError:
-                    pass
-            elif action['catcher'] != 0:
-                try:
-                    comm.drive(3, 3)
-		    time.sleep(1)
-		    comm.grab()
-                except StandardError:
-                    pass
-
-    def shutdown(self, comm):
-        comm.stop()
+        left_motor_speed = int(action['left_motor_speed'])
+        right_motor_speed = int(action['right_motor_speed'])
+        kicker_activated =  int(action['kicker_activated'])
+        catcher_activated = int(action['catcher_activated'])
+        duration = int(action['duration'])
+      
+        if kicker_activated == 0 && catcher_activated == 0 :
+            comm.drive(left_motor_speed, right_motor_speed)
+            time.sleep(duration)
+        
+        elif kicker_activated == 1 :
+            
+            if left_motor_speed != 0 && right_motor_speed != 0:
+                comm.drive(left_motor_speed, right_motor_speed)
+                time.sleep(duration)
+                comm.kick()
+                time.sleep(1)
+            
+            else:
+                comm.kick()
+                time.sleep(duration)
+            
+        elif catcher_activated == 1 :
+            
+            comm.grab()
+            time.sleep(duration)
 
     def shutdown(self, comm):
         comm.write('D_RUN_KICK\n')
@@ -219,32 +222,42 @@ class Attacker_Controller(Robot_Controller):
     def execute(self, comm, action):
         """
         Execute robot action.
+           return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
         """
-        if 'turn_90' in action:
-            comm.drive(-3, 3)
-            time.sleep(1)
-            comm.kick()
-            time.sleep(1)
-        else:
-            comm.drive(3, 3)
-	    time.sleep(1)
-            if action['kicker'] != 0:
-                try:
-                    comm.drive(3, 3)
-		    time.sleep(1)
-		    comm.kick()
-                except StandardError:
-                    pass
-            elif action['catcher'] != 0:
-                try:
-                    comm.drive(3, 3)
-		    time.sleep(1)
-		    comm.grab()
-                except StandardError:
-                    pass
+        left_motor_speed = int(action['left_motor_speed'])
+        right_motor_speed = int(action['right_motor_speed'])
+        kicker_activated =  int(action['kicker_activated'])
+        catcher_activated = int(action['catcher_activated'])
+        duration = int(action['duration'])
+      
+        if kicker_activated == 0 && catcher_activated == 0 :
+            comm.drive(left_motor_speed, right_motor_speed)
+            time.sleep(duration)
+        
+        elif kicker_activated == 1 :
+            
+            if left_motor_speed != 0 && right_motor_speed != 0:
+                comm.drive(left_motor_speed, right_motor_speed)
+                time.sleep(duration)
+                comm.kick()
+                time.sleep(1)
+            
+            else:
+                comm.kick()
+                time.sleep(duration)
+            
+        elif catcher_activated == 1 :
+            
+            comm.grab()
+            time.sleep(duration)
+        
+            
+            
+            
 
     def shutdown(self, comm):
-        comm.stop()
+        comm.write('A_RUN_KICK\n')
+        comm.write('A_RUN_ENGINE %d %d\n' % (0, 0))
 
 
 class Arduino:
