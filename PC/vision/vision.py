@@ -289,7 +289,7 @@ class GUI(object):
         cv2.createTrackbar(self.BG_SUB, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.NORMALIZE, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(
-            self.COMMS, self.VISION, self.arduino.comms, 1, lambda x:  self.arduino.setComms(x))
+            self.COMMS, self.VISION, 1, 1, self.nothing)
 
     def to_info(self, args):
         """
