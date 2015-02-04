@@ -35,15 +35,15 @@ class Planner:
         their_defender = self._world.their_defender
         their_attacker = self._world.their_attacker
         ball = self._world.ball
-	if robot == 'defender'
+	if robot == 'defender':
             # We have the ball in our zone, so we grab:
             if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y):
-                self._robot_current_strategy = strategies.AttackerGrab()
-		return lf._robot_current_strategy.generate()
-	else
-	    if._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
-                self._robot_current_strategy = strategies.AttackerGrab()
-		return lf._robot_current_strategy.generate()
+                self._robot_current_strategy = AttackerGrab(self._world)
+		return self._robot_current_strategy.generate()
+	else:
+	    if self._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
+                self._robot_current_strategy = AttackerGrab(self._world)
+		return self._robot_current_strategy.generate()
 			
 """
         else:
