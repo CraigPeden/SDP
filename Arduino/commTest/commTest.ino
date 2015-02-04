@@ -3,7 +3,7 @@
 	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
 
 	SIG is the signature of our communication, the value is 1
-	CHECKSUM is (OPCODE ARGUMENT) % 2
+	CHECKSUM is number of set bits (OPCODE ARGUMENT) % 2
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -41,6 +41,18 @@ void setup()
 int getArg(byte msg)
 {
   return (int)(msg & 0b00001111);
+}
+
+int countSetBits(int n)
+{
+  int count = 0;
+  while(n)
+  {
+    count += n & 1;
+    n >>= 1;
+  }
+  
+  return count;
 }
 
 void kickerStop()
@@ -109,7 +121,7 @@ void serialEvent() {
     
     // Check for the signature and for the integrity of the message
     if((msg & SIG_MASK) == SIG_MASK &&
-       ((int) (msg & PAYLOAD_MASK) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
+       (countSetBits((int) (msg & PAYLOAD_MASK)) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
     {
       Serial.write(msg);
       

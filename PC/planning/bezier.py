@@ -60,11 +60,11 @@ def plotPoints(points):
     plot([p.x for p in points], [p.y for p in points])
 
 def demo():
-	points = [Point(0, 0), Point(0, 1), Point(1, 0), Point(1, 1)]
+	points = [Point(0, 0), Point(0.1, 1), Point(0.9, 0), Point(1, 1)]
         
 	bezier = Bezier(points)
 	plotPoints(points)
-	bezierPoints = bezier.getPoints(10)
+	bezierPoints = bezier.getPoints(100)
 	print bezierPoints
 	plotPoints(bezierPoints)
 	

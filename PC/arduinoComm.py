@@ -15,7 +15,7 @@ class Communication(object):
 	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
 
 	SIG is the signature of our communication, the value is 1
-	CHECKSUM is (OPCODE ARGUMENT) % 2
+	CHECKSUM is number of set bits (OPCODE ARGUMENT) % 2
 	OPCODE is a 2 bit unsigned int.
 	ARGUMENT is a 4 bit unsigned int.
 
@@ -37,19 +37,27 @@ class Communication(object):
 
 	def write(self, opcode, value = 0, attemps = 5, signature=1):
 		if value > 15 or value < 0:
-			raise Exception("Argument value out of range")
+			raise Exception("Value out of range")
+
+		if opcode > 3 or opcode < 0:
+			raise Exception("Opcode out of range")
 
 		# Creating the checksum and composing the message
-		msg = (signature << 7) | ((opcode | value) % 2 << 6) | opcode | value
-		self.ser.write(chr(msg))
+		message = (signature << 7) | (countSetBits(opcode | value) % 2 << 6) | opcode | value
+		self.ser.write(chr(message))
 
-		#print bin(msg), bin(int((self.read()[0]).encode('hex'), 16))
+		#print bin(message), bin(int((self.read()[0]).encode('hex'), 16))
 
-		# if (int((self.read()[0]).encode('hex'), 16) != msg):
-		# 	if attemps > 0:
-		# 		self.write(mask, value, attemps - 1)
-		# 	else:
-		# 		raise Exception("Write failed")
+		if attemps > 0:
+			try:
+				receivedMessage = int((self.read()[0]).encode('hex'), 16)
+
+				if receivedMessage != message:
+					self.write(opcode, value, attemps - 1, signature)
+			except Exception:
+				self.write(opcode, value, attemps - 1, signature)
+		else:
+			raise Exception("Write failed")
 
 	def read(self, timeout = 0.1,  buffer_size = 1):
 		start_time = time.time()
@@ -112,3 +120,12 @@ class Movement(object):
 	def movement(self, robot_position, ball_position):
 		# Maths to move the robot from it's current position to the ball
 		self.test = "hello"
+
+def countSetBits(n):
+	count = 0
+	while n > 0:
+		count += n & 1
+		n >>= 1
+
+	return count
+
