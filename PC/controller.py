@@ -9,7 +9,6 @@ import serial
 import warnings
 import time
 import arduinoComm
-from test.test_optparse import DurationOption
 
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -182,13 +181,13 @@ class Defender_Controller(Robot_Controller):
         catcher_activated = int(action['catcher_activated'])
         duration = int(action['duration'])
       
-        if kicker_activated == 0 && catcher_activated == 0 :
+        if kicker_activated == 0 and catcher_activated == 0 :
             comm.drive(left_motor_speed, right_motor_speed)
             time.sleep(duration)
         
         elif kicker_activated == 1 :
             
-            if left_motor_speed != 0 && right_motor_speed != 0:
+            if left_motor_speed != 0 and right_motor_speed != 0:
                 comm.drive(left_motor_speed, right_motor_speed)
                 time.sleep(duration)
                 comm.kick()
@@ -230,13 +229,13 @@ class Attacker_Controller(Robot_Controller):
         catcher_activated = int(action['catcher_activated'])
         duration = int(action['duration'])
       
-        if kicker_activated == 0 && catcher_activated == 0 :
+        if kicker_activated == 0 and catcher_activated == 0 :
             comm.drive(left_motor_speed, right_motor_speed)
             time.sleep(duration)
         
         elif kicker_activated == 1 :
             
-            if left_motor_speed != 0 && right_motor_speed != 0:
+            if left_motor_speed != 0 and right_motor_speed != 0:
                 comm.drive(left_motor_speed, right_motor_speed)
                 time.sleep(duration)
                 comm.kick()
