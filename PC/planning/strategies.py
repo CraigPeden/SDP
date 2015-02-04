@@ -1,13 +1,12 @@
-from utilities import *
 import math
 from random import randint
 
 
-class AttackerGrab(role):
+class AttackerGrab:
 
 
     def __init__(self, world):
-        super(AttackerGrab, self).__init__(world, self.STATES)
+        self.world = world
 
 	
         self.our_attacker = self.world.our_attacker
@@ -21,19 +20,17 @@ class AttackerGrab(role):
             return 'open_catcher'
 
         displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
-        elif self.our_attacker.can_catch_ball(self.ball):
+        if self.our_attacker.can_catch_ball(self.ball):
             
             return 'grab'
        
-	 elif:
-            return calculate_motor_speed(displacement, angle)
+	
+        return self.calculate_motor_speed(displacement, angle)
 
-    def calculate_motor_speed(distance, angle):
-    '''
-    Simplistic view of calculating the speed: no modes or trying to be careful
-    '''
+    def calculate_motor_speed(self, distance, angle):
 
-      angle_thresh = pi/7
+
+      angle_thresh = math.pi/7
       distance_threshhold = 15
 
       if not (distance is None):
