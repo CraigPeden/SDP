@@ -42,6 +42,7 @@ class Controller:
 	assert role in [0, 1]
 
         self.pitch = pitch
+	self.role = role
 
         # Set up the Arduino communications
         self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
@@ -72,9 +73,9 @@ class Controller:
 
         self.preprocessing = Preprocessing()
 	
-	if(role == 0):
+	if(self.role == 0):
        	 self.controller = Attacker_Controller()
-	else
+	else:
          self.controller = Defender_Controller()
 
     def wow(self):
@@ -102,7 +103,7 @@ class Controller:
 
                 # Find appropriate action
                 self.planner.update_world(model_positions)
-                if role ==0:
+                if self.role ==0:
 		  robot_actions = self.planner.plan('attacker')
 		else :
 		  robot_actions = self.planner.plan('defender')
@@ -129,9 +130,9 @@ class Controller:
                 # Draw vision content and actions
 
                 self.GUI.draw(
-                    frame, model_positions, actions, regular_positions, fps, robot_state,
+                    frame, model_positions, actions, regular_positions, fps, robotState,
                    "we dont need it", robot_actions, "we dont need it", grabbers,
-                    our_color=self.color, our_side=self.side, key=c, preprocess=pre_options)
+                    our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
                 counter += 1
 
         except:
@@ -142,7 +143,7 @@ class Controller:
         finally:
             # Write the new calibrations to a file.
             tools.save_colors(self.pitch, self.calibration)
-            if  if self.controller is not None:
+            if self.controller is not None:
                 self.controller.shutdown(self.arduino)
 
 
@@ -179,7 +180,7 @@ class Defender_Controller(Robot_Controller):
            return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
         """
         
-      
+      	print action
 	if action == 'grab':
 	  
 	  comm.grab()
@@ -205,9 +206,7 @@ class Defender_Controller(Robot_Controller):
 	  comm.drive(0, 0)
                 
             
-        elif catcher_activated == 1 :
-            
-            comm.grab()
+
 
 
 
@@ -232,7 +231,7 @@ class Attacker_Controller(Robot_Controller):
            return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
         """
         
-      
+        print action
 	if action == 'grab':
 	  
 	  comm.grab()
@@ -243,11 +242,11 @@ class Attacker_Controller(Robot_Controller):
 
 	elif action == 'turn_left':
 	  
-	  comm.drive(-2, 2)
+	  comm.drive(-3, 3)
 
 	elif action == 'turn_right':
 	  
-	  comm.drive(2, -2)
+	  comm.drive(3, -3)
 
 	elif action == 'drive':
 	  
@@ -284,4 +283,4 @@ if __name__ == '__main__':
             pitch=int(args.pitch), color=args.color, our_side=args.side, role=args.role , comms=0).wow()
     else:
         c = Controller(
-            pitch=int(args.pitch), color=args.color, our_side=args.side, role=args.role).wow()
+            pitch=int(args.pitch), color=args.color, our_side=args.side, role=int(args.role)).wow()
