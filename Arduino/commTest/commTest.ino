@@ -31,6 +31,7 @@ byte LEFT_MOTOR_MASK = 0b00000000;
 /* Timed action */
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
+unsigned long timeOut = millis() + 1000;
 
 void setup()
 {
@@ -112,6 +113,11 @@ void loop()
     kickerStop();
     Serial.println("Stop kicker");
   }
+  if (timeOut < millis())
+  {
+    controlMotor(0, 7);
+    controlMotor(1, 7;)
+  }
 }
 
 void serialEvent() {
@@ -124,6 +130,7 @@ void serialEvent() {
        (countSetBits((int) (msg & PAYLOAD_MASK)) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
     {
       Serial.write(msg);
+      timeOut = millis() + 1000;
       
       if((msg & KICKER_MASK) == KICKER_MASK)
       {

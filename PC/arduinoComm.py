@@ -39,9 +39,6 @@ class Communication(object):
 		if value > 15 or value < 0:
 			raise Exception("Value out of range")
 
-		if opcode > 3 or opcode < 0:
-			raise Exception("Opcode out of range")
-
 		# Creating the checksum and composing the message
 		message = (signature << 7) | (countSetBits(opcode | value) % 2 << 6) | opcode | value
 		self.ser.write(chr(message))
@@ -57,7 +54,8 @@ class Communication(object):
 			except Exception:
 				self.write(opcode, value, attemps - 1, signature)
 		else:
-			raise Exception("Write failed")
+			pass
+			#raise Exception("Write failed")
 
 	def read(self, timeout = 0.1,  buffer_size = 1):
 		start_time = time.time()
