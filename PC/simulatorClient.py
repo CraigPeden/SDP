@@ -3,7 +3,7 @@ import multiprocessing
 
 
 class simulatorClient:
-    def __init__(self, port=6802, host='127.0.0.1'):
+    def __init__(self, port=6789, host='127.0.0.1'):
         self.__PORT = port
         self.__HOST = host
 
@@ -22,8 +22,8 @@ class simulatorClient:
                 if self.__PORT - p > 20:
                     raise
 
-        listenerThread = multiprocessing.Process(target=self.receiver, args=())
-        listenerThread.start()
+        #listenerThread = multiprocessing.Process(target=self.receiver, args=())
+        #listenerThread.start()
 
 
     def write(self, msg):

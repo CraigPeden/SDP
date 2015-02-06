@@ -109,10 +109,10 @@ class Communication(object):
             if left_wheel_speed > 0:
                 self.write(self.left_motor, left_wheel_speed + 8)
             else:
-                self.write(self.left_motor, left_wheel_speed + 8)
+                self.write(self.left_motor, left_wheel_speed + 7)
 
             if right_wheel_speed > 0:
-                self.write(self.right_motor, 8 - right_wheel_speed)
+                self.write(self.right_motor, 7 - right_wheel_speed)
             else:
                 self.write(self.right_motor, 8 - right_wheel_speed)
 
