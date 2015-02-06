@@ -3,7 +3,7 @@ import time
 import curses
 
 # Initializing the object which will handle communications
-comms = arduinoComm.Communication("/dev/ttyACM0", 9600)
+comms = arduinoComm.Communication("/dev/ttyACM0", 9600, True)
 
 # Initializing the screen
 stdscr = curses.initscr()

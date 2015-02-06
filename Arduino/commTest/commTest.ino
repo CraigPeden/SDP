@@ -16,6 +16,9 @@
 
 #include "SDPArduino.h"
 #include <Wire.h>
+#include <Servo.h>
+
+Servo servo;
 
 byte msg;  // the command buffer
 byte SIG_MASK = 0b10000000;
@@ -31,11 +34,12 @@ byte LEFT_MOTOR_MASK = 0b00000000;
 /* Timed action */
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
-unsigned long timeOut = millis() + 1000;
 
 void setup()
 {
   SDPsetup(); 
+  servo.attach(3, 600, 2400);
+  servo.write(90);
   Serial.println("Robot started");
 }
 
@@ -113,11 +117,6 @@ void loop()
     kickerStop();
     Serial.println("Stop kicker");
   }
-  if (timeOut < millis())
-  {
-    controlMotor(0, 7);
-    controlMotor(1, 7;)
-  }
 }
 
 void serialEvent() {
@@ -130,7 +129,6 @@ void serialEvent() {
        (countSetBits((int) (msg & PAYLOAD_MASK)) % 2 == (int) ((msg & CHECKSUM_MASK) >> 6)))
     {
       Serial.write(msg);
-      timeOut = millis() + 1000;
       
       if((msg & KICKER_MASK) == KICKER_MASK)
       {
