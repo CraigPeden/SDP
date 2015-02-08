@@ -236,6 +236,10 @@ class Attacker_Controller(Robot_Controller):
 	elif action == 'open_catcher':
 	  
 	  comm.kick()
+	
+	elif action == 'kick':
+	  
+	  comm.kick()
 
 	elif action == 'turn_left':
 	  
