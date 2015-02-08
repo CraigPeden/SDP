@@ -63,7 +63,7 @@ class Controller:
         self.postprocessing = Postprocessing()
 
         # Set up main planner
-        self.planner = Planner(our_side=our_side, pitch_num=self.pitch)
+        self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
 
         # Set up GUI
         self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
@@ -72,11 +72,9 @@ class Controller:
         self.side = our_side
 
         self.preprocessing = Preprocessing()
-	
-	if(self.role == 0):
-       	 self.controller = Attacker_Controller()
-	else:
-         self.controller = Defender_Controller()
+	#it doesn't matter whether it is an Attacker or a Defender Controller
+       	self.controller = Attacker_Controller()
+
 
     def wow(self):
         """
@@ -103,14 +101,13 @@ class Controller:
 
                 # Find appropriate action
                 self.planner.update_world(model_positions)
-                if self.role ==0:
-		  robot_actions = self.planner.plan('attacker')
-		else :
-		  robot_actions = self.planner.plan('defender')
+                
+		robot_action = self.planner.plan()
+
                 
 
                 if self.controller is not None:
-                    self.controller.execute(self.arduino,robot_actions)
+                    self.controller.execute(self.arduino, robot_action)
        
 
                 # Information about the grabbers from the world
