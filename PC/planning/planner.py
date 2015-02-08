@@ -47,12 +47,12 @@ class Planner:
 	if self.robot_role == 'defender':
             #Our robot is a defender
             if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y):
-                self._robot_current_strategy = DefenderGrab(self._world)
+                self._robot_current_strategy = DefenderGrab(self._world, our_color)
 		return self._robot_current_strategy.pick_action()
 	else:
 	    #Our robot is an attacker
 	    if self._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
-                self._robot_current_strategy = AttackerGrabShoot(self._world)
+                self._robot_current_strategy = AttackerGrabShoot(self._world, our_color)
 		return self._robot_current_strategy.pick_action()
 			
 """
