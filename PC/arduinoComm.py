@@ -30,9 +30,10 @@ class Communication(object):
     def __init__(self, port, baudrate=115200, simulator=False):
 
         if simulator:
-            self.use_simulator = simulator
+            self.use_simulator = True
             self.simulatorClient = simulatorClient()
         else:
+            self.use_simulator = False
         	# Initialise a serial object, give it a port, then give it a baudrate
             self.ser = serial.Serial(port, baudrate)
         
@@ -41,7 +42,7 @@ class Communication(object):
         self.rotation = 0b00100000
         self.kicker = 0b00110000
 
-    def write(self, opcode, value=0, attemps=5, signature=1):
+    def write(self, opcode, value=0, attemps=-1, signature=1):
        # print opcode
         if value > 15 or value < 0:
             raise Exception("Value out of range")
@@ -105,9 +106,9 @@ class Communication(object):
                 self.write(self.left_motor, left_wheel_speed + 7)
 
             if right_wheel_speed > 0:
-                self.write(self.right_motor, 7 - right_wheel_speed)
+                self.write(self.right_motor, right_wheel_speed + 8)
             else:
-                self.write(self.right_motor, 8 - right_wheel_speed)
+                self.write(self.right_motor, right_wheel_speed + 7)
 
 
 class Vision(object):

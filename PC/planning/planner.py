@@ -46,24 +46,24 @@ class Planner:
         their_attacker = self._world.their_attacker
         ball = self._world.ball
 	if self.robot_role == 'defender':
-            #Our robot is a defender
-            if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y):
-		if self._world.ball.velocity > BALL_VELOCITY_THRESH and our.defender.has_ball(ball) == False:
-                	self._robot_current_strategy = DefenderIntercept(self._world)
-			return self._robot_current_strategy.pick_action()
-		else:
-			self._robot_current_strategy = DefenderGrabPass(self._world)
-			return self._robot_current_strategy.pick_action()
-	    else:
-			self._robot_current_strategy = DefenderIntercept(self._world)
-			return self._robot_current_strategy.pick_action()
+        #Our robot is a defender
+        if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y):
+    		if self._world.ball.velocity > BALL_VELOCITY_THRESH and our_defender.has_ball(ball) == False:
+            	self._robot_current_strategy = DefenderIntercept(self._world)
+    			return self._robot_current_strategy.pick_action()
+    		else:
+    			self._robot_current_strategy = DefenderGrabPass(self._world)
+    			return self._robot_current_strategy.pick_action()
+    	    else:
+    			self._robot_current_strategy = DefenderIntercept(self._world)
+    			return self._robot_current_strategy.pick_action()
 			
 			
 	else:
 	    #Our robot is an attacker
 	    if self._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
-                self._robot_current_strategy = AttackerGrabShoot(self._world)
-		return self._robot_current_strategy.pick_action()
+            self._robot_current_strategy = AttackerGrabShoot(self._world)
+	        return self._robot_current_strategy.pick_action()
 			
 """
         else:

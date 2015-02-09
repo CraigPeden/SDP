@@ -16,9 +16,6 @@
 
 #include "SDPArduino.h"
 #include <Wire.h>
-#include <Servo.h>
-
-Servo servo;
 
 byte msg;  // the command buffer
 byte SIG_MASK = 0b10000000;
@@ -37,9 +34,7 @@ unsigned long kickerTime = millis();
 
 void setup()
 {
-  SDPsetup(); 
-  servo.attach(3, 600, 2400);
-  servo.write(90);
+  SDPsetup();
   Serial.println("Robot started");
 }
 

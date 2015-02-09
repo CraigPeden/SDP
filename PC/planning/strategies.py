@@ -38,15 +38,14 @@ class AttackerGrabShoot:
 			return self.calculate_motor_speed(displacement, angle)
 	else:
 		
-	#if our catcher is closed than we will open it since our goal is to grab the ball
-        	if self.our_attacker.catcher == 'closed':
-            		self.our_attacker.catcher = 'open'
-            		return 'open_catcher'
+	   #if our catcher is closed than we will open it since our goal is to grab the ball
+    	if self.our_attacker.catcher == 'closed':
+    		self.our_attacker.catcher = 'open'
+    		return 'open_catcher'
 
-        	displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
-        	if self.our_attacker.can_catch_ball(self.ball):
-            
-            		return 'grab'
+    	displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
+    	if self.our_attacker.can_catch_ball(self.ball):
+    		return 'grab'
        
 		else:
         		return self.calculate_motor_speed(displacement, angle)
@@ -86,17 +85,17 @@ class DefenderIntercept:
 	ANGLE_THRESH = math.pi/12
 
 	
-        self.our_attacker = self.world.our_attacker
-        self.ball = self.world.ball
-        zone = self.world._pitch._zones[self.world.our_attacker.zone]
-        min_x, max_x, min_y, max_y  = zone.boundingBox()
-        our_defender = self.world.our_defender
-        our_attacker = self.world.our_attacker
-        their_defender = self.world.their_defender
-        their_attacker = self.world.their_attacker
-        ball = self.world.ball
+    self.our_attacker = self.world.our_attacker
+    self.ball = self.world.ball
+    zone = self.world._pitch._zones[self.world.our_attacker.zone]
+    min_x, max_x, min_y, max_y  = zone.boundingBox()
+    our_defender = self.world.our_defender
+    our_attacker = self.world.our_attacker
+    their_defender = self.world.their_defender
+    their_attacker = self.world.their_attacker
+    ball = self.world.ball
 	self.center_x = (min_x + max_x)/2
-        self.center_y = (min_y + max_y)/2
+    self.center_y = (min_y + max_y)/2
 	
 
     def predict_y_intersection(world, predict_for_x, robot, full_width=False, bounce=False):
@@ -153,20 +152,20 @@ class DefenderIntercept:
     def calculate_motor_speed(self, distance, angle):
 
 
-      angle_thresh = math.pi/7
-      distance_threshhold = 15
+        angle_thresh = math.pi/7
+        distance_threshhold = 15
 
-      if not (distance is None):
+        if not (distance is None):
 
-          if distance < distance_threshhold:
-               return 'stop'
+            if distance < distance_threshhold:
+                return 'stop'
 
-          elif abs(angle) > angle_thresh:
+            elif abs(angle) > angle_thresh:
        
-              if angle > 0 :
-                return 'turn_left'
-              elif angle <0 :
-                return 'turn_right'
+                if angle > 0 :
+                    return 'turn_left'
+                elif angle <0 :
+                    return 'turn_right'
 
           else:
            
@@ -180,20 +179,20 @@ class DefenderGrabPass:
     def __init__(self, world):
         self.world = world
 
-	DISTANCE_THRESH = 15
-	ANGLE_THRESH = math.pi/12
+        DISTANCE_THRESH = 15
+        ANGLE_THRESH = math.pi/12
 
-	
+
         self.our_attacker = self.world.our_attacker
         self.ball = self.world.ball
         zone = self.world._pitch._zones[self.world.our_attacker.zone]
         min_x, max_x, min_y, max_y  = zone.boundingBox()
-	self.center_x = (min_x + max_x)/2
+        self.center_x = (min_x + max_x)/2
         self.center_y = (min_y + max_y)/2
-	self.goal_x = self.world.their_goal.x
+        self.goal_x = self.world.their_goal.x
         self.goal_y = self.world.their_goal.y + self.world.their.goal.height()/2
-        
-	our_defender = self.world.our_defender
+            
+        our_defender = self.world.our_defender
         our_attacker = self.world.our_attacker
         their_defender = self.world.their_defender
         their_attacker = self.world.their_attacker
@@ -252,37 +251,34 @@ class DefenderGrabPass:
 		
 	#if our catcher is closed than we will open it since our goal is to grab the ball
         	if self.our_attacker.catcher == 'closed':
-            		self.our_attacker.catcher = 'open'
-            		return 'open_catcher'
+        		self.our_attacker.catcher = 'open'
+        		return 'open_catcher'
 
         	displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
         	if self.our_attacker.can_catch_ball(self.ball):
             
-            		return 'grab'
-       
+        		return 'grab'
 		else:
-        		return self.calculate_motor_speed(displacement, angle)
+    		return self.calculate_motor_speed(displacement, angle)
 
 
 
     def calculate_motor_speed(self, distance, angle):
 
+        angle_thresh = math.pi/7
+        distance_threshhold = 15
 
-      angle_thresh = math.pi/7
-      distance_threshhold = 15
+        if not (distance is None):
 
-      if not (distance is None):
-
-          if distance < distance_threshhold:
+            if distance < distance_threshhold:
                return 'stop'
 
-          elif abs(angle) > angle_thresh:
-       
-              if angle > 0 :
-                return 'turn_left'
-              elif angle <0 :
-                return 'turn_right'
-
-          else:
+            elif abs(angle) > angle_thresh:
            
-             return 'drive'
+                if angle > 0 :
+                    return 'turn_left'
+                elif angle <0 :
+                    return 'turn_right'
+            else:
+               
+                 return 'drive'
