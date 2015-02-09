@@ -3,7 +3,7 @@ import time
 import curses
 
 # Initializing the object which will handle communications
-comms = arduinoComm.Communication("/dev/ttyACM0", 9600)
+comms = arduinoComm.Communication("/dev/ttyACM1", 9600)
 
 # Initializing the screen
 stdscr = curses.initscr()
@@ -54,6 +54,10 @@ while key != ord('q') and key != ord('Q'):
     if key == ord('c'):
         stdscr.addstr(10, 9, "KICK     ")
         comms.kick()
+
+    if key == ord('v'):
+        stdscr.addstr(10, 9, "KICK     ")
+        comms.raiseKicker()
 
     stdscr.refresh()
 
