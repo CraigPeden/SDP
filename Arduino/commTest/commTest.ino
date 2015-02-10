@@ -29,9 +29,9 @@ byte LEFT_MOTOR_MASK = 0b00010000;
 /* Timed action */
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
-int kickHold = 230;
-int raiseHold = 300;
-int grabHold = 150;
+int kickHold = 330;
+int raiseHold = 220;
+int grabHold = 200;
 
 void setup()
 {
@@ -69,7 +69,7 @@ void controlKicker(int value)
     /* Grab */
     kickerTime = millis() + grabHold;
     kickerAction = true;
-    motorBackward(2,50);
+    motorBackward(2,100);
   }
   else if(value == 1)
   {
@@ -83,7 +83,7 @@ void controlKicker(int value)
     /* Raise */
     kickerTime = millis() + raiseHold;
     kickerAction = true;
-    motorForward(2,50);
+    motorForward(2,100);
   }
 }
 
