@@ -21,10 +21,14 @@ class AttackerGrab:
 
 		elif not (distance is None):
 
+<<<<<<< HEAD
 			if abs(angle) > 11 * math.pi / 12:
 				return 'backwards'
 
 			if abs(angle) > math.pi / 12:
+=======
+            if abs(angle) > math.pi / 12:
+>>>>>>> 58bef67848e6d732295a37121dedebdd69b75e99
 
 				if angle > 0:
 					return 'turn_left'
