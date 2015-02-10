@@ -163,8 +163,7 @@ class DefenderIntercept:
 				elif angle < 0 :
 					return 'turn_right'
 			else:
-				return 'drive'	
-		
+				return 'drive'
 			
 
 			
