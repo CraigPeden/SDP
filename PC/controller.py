@@ -205,7 +205,7 @@ class Attacker_Controller(Robot_Controller):
 			comm.drive(5, 5)
 		elif action == 'drive_slow':
 		  
-			comm.drive(3, 3)
+			comm.drive(4, 4)
 
 		elif action == 'stop':
 		  

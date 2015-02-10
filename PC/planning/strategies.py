@@ -21,19 +21,24 @@ class AttackerGrabShoot:
 
 	def pick_action(self):
 
-		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 0:
+		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 0 and time.time() > self.last_kicker_action + 1:
+			self.last_kicker_action = time.time()
 			self.have_ball == 1
 			return 'grab'
 			#We have the ball so we need to get into a shooting position and shoot
 		#displacement, angle = self.our_attacker.get_direction_to_point(450, 130)
 		#if self.have_ball == 1  and abs(angle) < math.pi/12 :
 		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 1:
-			displacement, angle = self.our_attacker.get_direction_to_point(460, 130)
-			return self.calculate_motor_speed(0, angle)
+			displacement, angle = self.our_attacker.get_direction_to_point(350, 130)
+			if displacement < 20:
+				angle = self.our_attacker.get_rotation_to_point(450, 130)
+				return self.calculate_motor_speed(0, angle)
+			else:
+				return self.calculate_motor_speed(displacement, angle)
 
 		if time.time() > self.last_kicker_action + 3 and self.our_attacker.get_displacement_to_point(self.ball.x, self.ball.y) > 50:
-		   	self.last_kicker_action = time.time()
 		   	self.have_ball = 0
+		   	self.last_kicker_action = time.time()
 		   	return 'open_catcher'
 		
 		
@@ -46,28 +51,34 @@ class AttackerGrabShoot:
 
 
 		angle_thresh = math.pi/12
-		distance_threshhold = 50
+		distance_threshhold = 20
 
 		if not (distance is None):
 
-			if distance == 0 and angle<angle_thresh:
+			if distance == 0 and abs(angle)<angle_thresh:
+				self.have_ball == 0
+				self.last_kicker_action = time.time()
 				return 'kick'
 
-			if distance < distance_threshhold:
-				return 'stop'
+			if distance ==0 and abs(angle) > angle_thresh:
+				if angle > 0:
+					return 'turn_left'
+				if angle < 0:
+					return 'turn_right'
 
-			elif abs(angle) > angle_thresh:
+			if abs(angle) > angle_thresh:
        
 				if angle > 0 :
 					return 'turn_left'
 				elif angle <0 :
 					return 'turn_right'
 
+			elif distance > 30:
+				return 'drive'
+				
+
 			else:
-				if(distance < 100):
-					return 'drive_slow'
-				else:
-					return 'drive'
+				return 'drive_slow'
 
 
 
