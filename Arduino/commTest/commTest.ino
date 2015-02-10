@@ -8,9 +8,8 @@
 	ARGUMENT is a 4 bit unsigned int.
 
 	OPCODES
-	0 | Left Power Motor  | Arguments = 0-15 (7-8: STOP)|
-	1 | Right Power Motor | Arguments = 0-15 (7-8: STOP)|
-	2 | Rotational Motor  | Arguments = 0-14      	    |
+	1 | Left Power Motor  | Arguments = 0-15 (7-8: STOP)|
+	2 | Right Power Motor | Arguments = 0-15 (7-8: STOP)|
 	3 | Kicker            | Arguments = 1 to fire 	    |
 */
 
@@ -24,13 +23,15 @@ byte PAYLOAD_MASK = 0b00111111;
 
 /* BIT MASKS FOR OPCODES */
 byte KICKER_MASK = 0b00110000;
-byte ROT_MASK = 0b00100000;
-byte RIGHT_MOTOR_MASK = 0b00010000;
-byte LEFT_MOTOR_MASK = 0b00000000;
+byte RIGHT_MOTOR_MASK = 0b00100000;
+byte LEFT_MOTOR_MASK = 0b00010000;
 
 /* Timed action */
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
+int kickHold = 330;
+int raiseHold = 220;
+int grabHold = 200;
 
 void setup()
 {
@@ -66,16 +67,23 @@ void controlKicker(int value)
   if(value == 0)
   {
     /* Grab */
-    kickerTime = millis() + 500;
+    kickerTime = millis() + grabHold;
     kickerAction = true;
-    motorForward(2,100);
+    motorBackward(2,100);
   }
   else if(value == 1)
   {
     /* Kick */
-    kickerTime = millis() + 500;
+    kickerTime = millis() + kickHold;
     kickerAction = true;
-    motorBackward(2,100);
+    motorForward(2,100);
+  }
+  else if(value == 2)
+  {
+    /* Raise */
+    kickerTime = millis() + raiseHold;
+    kickerAction = true;
+    motorForward(2,100);
   }
 }
 
@@ -110,7 +118,6 @@ void loop()
   if(kickerAction && (kickerTime < millis()))
   {
     kickerStop();
-    Serial.println("Stop kicker");
   }
 }
 
@@ -130,10 +137,6 @@ void serialEvent() {
         // Serial.println("KICKER");
         controlKicker(getArg(msg));
       }
-      else if((msg & ROT_MASK) == ROT_MASK)
-      {
-        //Serial.println("ROTATION");
-      }
       else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
       {        
         //Serial.println("MOTOR");
@@ -144,10 +147,6 @@ void serialEvent() {
         //Serial.println("LED");
         controlMotor(1, msg);
       }
-    }
-    else
-    {
-      Serial.write("Integrity check failed.");
     }
   }
 }

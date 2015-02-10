@@ -511,6 +511,6 @@ class GUI(object):
         self.draw_text(
             frame, "Right Motor: ", x, y+15, color=BGR_COMMON['white'])
         self.draw_text(
-            frame, "Speed: ", x, y + 25, color=BGR_COMMON['white'])
+            frame, "Speed: " + str(action['speed']), x, y + 25, color=BGR_COMMON['white'])
         self.draw_text(frame, "Kicker: " , x, y + 35, color=BGR_COMMON['white'])
         self.draw_text(frame, "Catcher: " , x, y + 45, color=BGR_COMMON['white'])

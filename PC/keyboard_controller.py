@@ -55,6 +55,10 @@ while key != ord('q') and key != ord('Q'):
         stdscr.addstr(10, 9, "KICK     ")
         comms.kick()
 
+    if key == ord('v'):
+        stdscr.addstr(10, 9, "KICK     ")
+        comms.raiseKicker()
+
     stdscr.refresh()
 
 curses.endwin()
