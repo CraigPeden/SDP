@@ -208,10 +208,16 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'backwards':
 		  
 			comm.drive(-4, -4)
+		elif action == 'backwards_intercept':
+		  
+			comm.drive(-7, -7)	
 
 		elif action == 'drive':
 		  
 			comm.drive(5, 5)
+		elif action == 'drive_intercept':
+		  
+			comm.drive(7, 7)	
 		elif action == 'drive_slow':
 		  
 			comm.drive(3, 3)
