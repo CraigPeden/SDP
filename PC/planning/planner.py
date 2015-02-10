@@ -9,7 +9,7 @@ class Planner:
     def __init__(self, our_side, pitch_num, our_color):
 		self._world = World(our_side, pitch_num)
 		self._world.our_defender.catcher_area = {'width' : 40, 'height' : 45, 'front_offset' : 12} #10
-		self._world.our_attacker.catcher_area = {'width' : 30, 'height' : 37, 'front_offset' : 14}
+		self._world.our_attacker.catcher_area = {'width' : 30, 'height' : 35, 'front_offset' : 14}
 		self.our_side = our_side
 		self.our_color = our_color
 		#needs to be checked
