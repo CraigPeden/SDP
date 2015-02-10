@@ -82,6 +82,8 @@ class AttackerShoot:
 		elif distance > 30 and angle < math.pi/12:
 			
 			return 'drive_slow'
+		elif distance > 50 and angle > 11*math.pi/12:
+			return 'backwards'
 		
 		elif distance > 30 and angle > math.pi/12:
 
