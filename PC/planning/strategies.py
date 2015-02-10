@@ -21,9 +21,6 @@ class AttackerGrab:
 
         elif not (distance is None):
 
-            if abs(angle) > 11 * math.pi / 12:
-                return 'backwards'
-
             if abs(angle) > math.pi / 12:
 
                 if angle > 0:
