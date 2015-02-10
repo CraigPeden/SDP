@@ -1,10 +1,12 @@
+from multiprocessing import Process, Queue
+from collections import namedtuple
+
 import cv2
+import numpy as np
+
 import tools
 from tracker import BallTracker, RobotTracker
-from multiprocessing import Process, Queue
 from colors import BGR_COMMON
-from collections import namedtuple
-import numpy as np
 from findHSV import CalibrationGUI
 
 
@@ -46,10 +48,10 @@ class Vision:
             self.us = [
                 RobotTracker(
                     color=color, crop=zones[0], offset=zones[0][0], pitch=pitch,
-                    name='Our Defender', calibration=calibration),   # defender
+                    name='Our Defender', calibration=calibration),  # defender
                 RobotTracker(
                     color=color, crop=zones[2], offset=zones[2][0], pitch=pitch,
-                    name='Our Attacker', calibration=calibration)   # attacker
+                    name='Our Attacker', calibration=calibration)  # attacker
             ]
 
             self.opponents = [
@@ -74,7 +76,7 @@ class Vision:
             self.opponents = [
                 RobotTracker(
                     color=opponent_color, crop=zones[0], offset=zones[0][0], pitch=pitch,
-                    name='Their Defender', calibration=calibration),   # defender
+                    name='Their Defender', calibration=calibration),  # defender
                 RobotTracker(
                     color=opponent_color, crop=zones[2], offset=zones[2][0], pitch=pitch,
                     name='Their Attacker', calibration=calibration)
@@ -128,7 +130,7 @@ class Vision:
         """
         plane_height = 250.0
         robot_height = 20.0
-        coefficient = robot_height/plane_height
+        coefficient = robot_height / plane_height
 
         x = point[0]
         y = point[1]
@@ -139,7 +141,7 @@ class Vision:
         delta_x = dist_x * coefficient
         delta_y = dist_y * coefficient
 
-        return (int(x-delta_x), int(y-delta_y))
+        return (int(x - delta_x), int(y - delta_y))
 
     def get_adjusted_positions(self, positions):
         try:
@@ -256,8 +258,8 @@ class Camera(object):
         frame = self.fix_radial_distortion(frame)
         if status:
             return frame[
-                self.crop_values[2]:self.crop_values[3],
-                self.crop_values[0]:self.crop_values[1]
+                   self.crop_values[2]:self.crop_values[3],
+                   self.crop_values[0]:self.crop_values[1]
             ]
 
     def fix_radial_distortion(self, frame):
@@ -265,11 +267,10 @@ class Camera(object):
             frame, self.c_matrix, self.dist, None, self.nc_matrix)
 
     def get_adjusted_center(self, frame):
-        return (320-self.crop_values[0], 240-self.crop_values[2])
+        return (320 - self.crop_values[0], 240 - self.crop_values[2])
 
 
 class GUI(object):
-
     VISION = 'SUCH VISION'
     BG_SUB = 'BG Subtract'
     NORMALIZE = 'Normalize  '
@@ -283,13 +284,18 @@ class GUI(object):
         self.calibration_gui = CalibrationGUI(calibration)
         self.arduino = arduino
         self.pitch = pitch
-
+        self.frame = None
         cv2.namedWindow(self.VISION)
 
         cv2.createTrackbar(self.BG_SUB, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.NORMALIZE, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(
             self.COMMS, self.VISION, 1, 1, self.nothing)
+
+        cv2.setMouseCallback(self.vision, self.get_hsv)
+
+    def get_hsv(self, event, x, y, flags, param):
+        print cv2.Get2D(self.frame, x, y)
 
     def to_info(self, args):
         """
@@ -336,7 +342,7 @@ class GUI(object):
 
         key_color_pairs = zip(
             ['our_defender', 'their_defender', 'our_attacker', 'their_attacker'],
-            [our_color, their_color]*2)
+            [our_color, their_color] * 2)
 
         self.draw_ball(frame, regular_positions['ball'])
 
@@ -375,7 +381,7 @@ class GUI(object):
 
         # Draw center of uncroppped frame (test code)
         # cv2.circle(frame_with_blank, (266,147), 1, BGR_COMMON['black'], 1)
-
+        self.frame = frame_with_blank
         cv2.imshow(self.VISION, frame_with_blank)
 
     def draw_zones(self, frame, width, height):
@@ -431,9 +437,9 @@ class GUI(object):
                 y_offset = frame_height + 130
                 draw_x = 30
             else:
-                x_main = lambda zz: (frame_width/4)*zz
+                x_main = lambda zz: (frame_width / 4) * zz
                 x_offset = 30
-                y_offset = frame_height+20
+                y_offset = frame_height + 20
 
                 if text == "our_defender":
                     draw_x = x_main(0) + x_offset
@@ -445,7 +451,7 @@ class GUI(object):
                     draw_x = x_main(1) + x_offset
 
                 if our_side == "right":
-                    draw_x = frame_width-draw_x - 80
+                    draw_x = frame_width - draw_x - 80
 
             self.draw_text(frame, text, draw_x, y_offset)
             self.draw_text(frame, 'x: %.2f' % x, draw_x, y_offset + 10)
@@ -457,11 +463,11 @@ class GUI(object):
             if velocity is not None:
                 self.draw_text(frame, 'velocity: %.2f' % velocity, draw_x, y_offset + 40)
         if text == 'our_attacker':
-            self.draw_actions(frame, a_action, draw_x, y_offset+50)
+            self.draw_actions(frame, a_action, draw_x, y_offset + 50)
         elif text == 'our_defender':
-            self.draw_actions(frame, d_action, draw_x, y_offset+50)
+            self.draw_actions(frame, d_action, draw_x, y_offset + 50)
 
-    def draw_text(self, frame, text, x, y, color=BGR_COMMON['green'], thickness=1.3, size=0.3,):
+    def draw_text(self, frame, text, x, y, color=BGR_COMMON['green'], thickness=1.3, size=0.3, ):
         if x is not None and y is not None:
             cv2.putText(
                 frame, text, (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, size, color, thickness)
@@ -483,9 +489,9 @@ class GUI(object):
         cv2.polylines(frame, [np.array(att_grabber)], True, BGR_COMMON['red'], 1)
 
     def draw_velocity(self, frame, frame_offset, x, y, angle, vel, scale=10):
-        if not(None in [frame, x, y, angle, vel]) and vel is not 0:
+        if not (None in [frame, x, y, angle, vel]) and vel is not 0:
             frame_width, frame_height = frame_offset
-            r = vel*scale
+            r = vel * scale
             y = frame_height - y
             start_point = (x, y)
             end_point = (x + r * np.cos(angle), y - r * np.sin(angle))
@@ -493,9 +499,9 @@ class GUI(object):
 
     def draw_states(self, frame, aState, dState, frame_offset):
         frame_width, frame_height = frame_offset
-        x_main = lambda zz: (frame_width/4)*zz
+        x_main = lambda zz: (frame_width / 4) * zz
         x_offset = 20
-        y_offset = frame_height+140
+        y_offset = frame_height + 140
 
         self.draw_text(frame, "Attacker State:", x_main(1) - x_offset, y_offset, size=0.6)
         self.draw_text(frame, aState[0], x_main(1) - x_offset, y_offset + 15, size=0.6)
@@ -503,14 +509,14 @@ class GUI(object):
 
         self.draw_text(frame, "Defender State:", x_main(2) + x_offset, y_offset, size=0.6)
         self.draw_text(frame, dState[0], x_main(2) + x_offset, y_offset + 15, size=0.6)
-        self.draw_text(frame, dState[1], x_main(2)+x_offset, y_offset + 30, size=0.6)
+        self.draw_text(frame, dState[1], x_main(2) + x_offset, y_offset + 30, size=0.6)
 
     def draw_actions(self, frame, action, x, y):
         self.draw_text(
-            frame, "Left Motor: ", x, y+5, color=BGR_COMMON['white'])
+            frame, "Left Motor: ", x, y + 5, color=BGR_COMMON['white'])
         self.draw_text(
-            frame, "Right Motor: ", x, y+15, color=BGR_COMMON['white'])
+            frame, "Right Motor: ", x, y + 15, color=BGR_COMMON['white'])
         self.draw_text(
             frame, "Speed: ", x, y + 25, color=BGR_COMMON['white'])
-        self.draw_text(frame, "Kicker: " , x, y + 35, color=BGR_COMMON['white'])
-        self.draw_text(frame, "Catcher: " , x, y + 45, color=BGR_COMMON['white'])
+        self.draw_text(frame, "Kicker: ", x, y + 35, color=BGR_COMMON['white'])
+        self.draw_text(frame, "Catcher: ", x, y + 45, color=BGR_COMMON['white'])
