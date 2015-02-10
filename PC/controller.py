@@ -182,6 +182,7 @@ class Attacker_Controller(Robot_Controller):
 			print action    
 
 		if action == 'grab':
+
 			comm.grab()
 			time.sleep(1)
 
@@ -190,8 +191,9 @@ class Attacker_Controller(Robot_Controller):
 			comm.raiseKicker()
 	
 		elif action == 'kick':
-			
+
 			comm.kick()
+			time.sleep(1)
 
 		elif action == 'turn_left':
 

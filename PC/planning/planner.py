@@ -9,7 +9,7 @@ class Planner:
     def __init__(self, our_side, pitch_num, our_color):
 		self._world = World(our_side, pitch_num)
 		self._world.our_defender.catcher_area = {'width' : 40, 'height' : 45, 'front_offset' : 12} #10
-		self._world.our_attacker.catcher_area = {'width' : 20, 'height' : 30, 'front_offset' : 14}
+		self._world.our_attacker.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 14}
 		self._world.our_attacker.catcher='open'
 		self.our_side = our_side
 		self.our_color = our_color
@@ -60,10 +60,14 @@ class Planner:
 			if self._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
 				if our_attacker.has_ball(ball):
 					print 'AttackerShoot'
+					print our_attacker.catcher
+					self._world.our_attacker.catcher_area = {'width' : 60, 'height' : 45, 'front_offset' : 10}
 					self._robot_current_strategy = self.attacker_shoot_strategy
 					return self._robot_current_strategy.pick_action()
 				else:
 					print 'AttackerGrab'
+					print our_attacker.catcher
+					self._world.our_attacker.catcher_area = {'width' : 25, 'height' : 35, 'front_offset' : 14}
 					self._robot_current_strategy = self.attacker_grab_strategy
 					return self._robot_current_strategy.pick_action()
 		
