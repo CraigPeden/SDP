@@ -141,25 +141,31 @@ class DefenderIntercept:
 
     def pick_action(self):
 
-		if self.ball.velocity > 5:
-			predicted_y = self.predict_y_intersection(self.world, self.our_defender.x, self.ball, bounce=False)
-			distance, angle = self.our_defender.get_direction_to_point(self.our_defender.x, predicted_y)
 		
-			if abs(angle) > 11*math.pi/12:
-				return 'backwards'
+		predicted_y = self.predict_y_intersection(self.world, self.our_defender.x, self.ball, bounce=False)
+		distance, angle = self.our_defender.get_direction_to_point(self.our_defender.x, self.ball.y)
+		print distance,'  ', angle
+		return self.calculate_motor_speed(distance, angle)
 
-			elif abs(angle) > math.pi/12:
 
+	def calculate_motor_speed(self, distance, angle):
+		angle_thresh = math.pi/7
+		distance_threshhold = 15
+		if not (distance is None):
+
+		if distance < distance_threshhold:
+			return 'stop'
+
+		elif abs(angle) > angle_thresh:
+			
 				if angle > 0 :
 					return 'turn_left'
-				elif angle <0 :
+				elif angle < 0 :
 					return 'turn_right'
-
-			elif distance > 50 :
-				return 'drive'
-				
 			else:
-				return 'drive_slow'
+				return 'drive'	
+		
+			
 
 			
 	
