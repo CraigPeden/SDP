@@ -292,10 +292,11 @@ class GUI(object):
         cv2.createTrackbar(
             self.COMMS, self.VISION, 1, 1, self.nothing)
 
-        cv2.setMouseCallback(self.vision, self.get_hsv)
+        #cv2.setMouseCallback(self.VISION, self.get_hsv)
 
     def get_hsv(self, event, x, y, flags, param):
-        print cv2.Get2D(self.frame, x, y)
+        hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+        print hsv[x][y]
 
     def to_info(self, args):
         """
@@ -381,7 +382,7 @@ class GUI(object):
 
         # Draw center of uncroppped frame (test code)
         # cv2.circle(frame_with_blank, (266,147), 1, BGR_COMMON['black'], 1)
-        self.frame = frame_with_blank
+       
         cv2.imshow(self.VISION, frame_with_blank)
 
     def draw_zones(self, frame, width, height):
@@ -405,6 +406,8 @@ class GUI(object):
             cv2.circle(frame, location, 2, BGR_COMMON['white'], 1)
 
     def draw_robot(self, frame, position_dict, color):
+        self.frame = frame
+
         if position_dict['box']:
             cv2.polylines(frame, [np.array(position_dict['box'])], True, BGR_COMMON[color], 2)
 

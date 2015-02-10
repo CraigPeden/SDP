@@ -360,6 +360,10 @@ class World(object):
     @property
     def their_attacker(self):
         return self._robots[1] if self._our_side == 'left' else self._robots[2]
+    @property
+    def our_side(self):
+        pass
+        #return self.our_side    
 
     @property
     def our_defender(self):

@@ -19,6 +19,10 @@ class AttackerGrab:
 			self.our_attacker.catcher = 'closed'
 			return 'grab'
 
+		if self.our_attacker.can_catch_ball(self.ball) == False and self.our_attacker.catcher == 'closed':
+			self.our_attacker.catcher = 'open'
+			return 'open_catcher'
+
 		elif not (distance is None):
 
 
@@ -44,10 +48,15 @@ class AttackerShoot:
 		self.ball = self.world.ball
 		zone = self.world._pitch._zones[self.world.our_attacker.zone]
 		min_x, max_x, min_y, max_y = zone.boundingBox()
-		self.goal_x = 480
-		self.goal_y = 160
-		self.center_x = 315
-		self.center_y = 160
+		self.goal_x = self.world.their_goal.x 
+		self.goal_y = self.world.their_goal.y + self.world.their_goal.height/2
+		if self.world.our_side == 'left':
+			self.center_x = 350
+			self.center_y = 160
+		else:
+			self.center_x = 120
+			self.center_y = 160
+				
 
 
 	def pick_action(self):
@@ -97,21 +106,7 @@ class DefenderIntercept:
 		self.their_attacker = world.their_attacker
 
 
-	def predict_y_intersection(self, world, predict_for_x, robot, full_width=False, bounce=False):
-		'''
-		Predicts the (x, y) coordinates of the ball shot by the robot
-		Corrects them if it's out of the bottom_y - top_y range.
-		If bounce is set to True, predicts for a bounced shot
-		Returns None if the robot is facing the wrong direction.
-		'''
-		x = robot.x
-		y = robot.y
-		top_y = world._pitch.height - 60 if full_width else world.our_goal.y + (world.our_goal.width / 2) - 30
-		bottom_y = 60 if full_width else world.our_goal.y - (world.our_goal.width / 2) + 30
-		angle = robot.angle
-		predicted_y = (y + math.tan(angle) * (predict_for_x - x))
-
-		return predicted_y
+	
 
 
 	def pick_action(self):
@@ -121,7 +116,6 @@ class DefenderIntercept:
 			if 	self.our_defender.catcher == 'open':
 				self.our_defender.catcher = 'closed'
 				return 'grab'
-			predicted_y = self.predict_y_intersection(self.world, self.our_defender.x, self.ball, bounce=False)
 			if self.ball.y > self.world.our_goal.y + 45 and self.ball.y < self.world.our_goal.y+ self.world.our_goal.height -45:
 				y=self.ball.y
 			else:
@@ -195,8 +189,8 @@ class DefenderGrab:
 
 		distance, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
 
-		if self.our_attacker.can_catch_ball(self.ball):
-			self.our_attacker.catcher = 'closed'
+		if self.our_defender.can_catch_ball(self.ball):
+			self.our_defender.catcher = 'closed'
 			return 'grab'
 
 		elif not (distance is None):
@@ -245,11 +239,11 @@ class DefenderPass:
 
 	def pick_action(self):
 
-		distance, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
-		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
+		angle_to_goal = self.our_defender.get_rotation_to_point(self.goal_x, self.goal_y)
 
 		if distance < 30 and angle_to_goal < math.pi / 12:
-			self.our_attacker.catcher = 'open'
+			self.our_defender.catcher = 'open'
 			return 'kick'
 
 		elif distance < 30 and angle_to_goal > math.pi / 12:
