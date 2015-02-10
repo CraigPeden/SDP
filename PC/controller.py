@@ -46,7 +46,7 @@ class Controller:
 
 		# Set up the Arduino communications
 		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
-		self.arduino.raiseKicker()
+		self.arduino.kick()
 
 		# Set up camera for frames
 		self.camera = Camera(port=video_port, pitch=self.pitch)
@@ -180,8 +180,10 @@ class Attacker_Controller(Robot_Controller):
 		"""
 		if action != None:
 			print action    
+
 		if action == 'grab':
 			comm.grab()
+			time.sleep(1)
 
 		elif action == 'open_catcher':
 			   
@@ -202,10 +204,10 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'drive':
 		  
-			comm.drive(5, 5)
+			comm.drive(4, 4)
 		elif action == 'drive_slow':
 		  
-			comm.drive(4, 4)
+			comm.drive(3, 3)
 
 		elif action == 'stop':
 		  

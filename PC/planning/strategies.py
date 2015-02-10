@@ -3,7 +3,7 @@ from random import randint
 import time
 
 
-class AttackerGrabShoot:
+class AttackerGrab:
 
 
 	def __init__(self, world):
@@ -15,66 +15,84 @@ class AttackerGrabShoot:
 		zone = self.world._pitch._zones[self.world.our_attacker.zone]
 		min_x, max_x, min_y, max_y  = zone.boundingBox()
 
-		self.have_ball = 0
-		self.last_kicker_action = time.time()
 			
 
 	def pick_action(self):
 
-		if self.have_ball == 1:
-			return self.calculate_motor_speed(0, 0)
-
-		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 0 and time.time() > self.last_kicker_action + 1:
-			self.last_kicker_action = time.time()
-			self.have_ball == 1
+		distance, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
+		
+		if self.our_attacker.can_catch_ball(self.ball):
+			self.our_attacker.catcher='closed'
 			return 'grab'
-			#We have the ball so we need to get into a shooting position and shoot
-		#displacement, angle = self.our_attacker.get_direction_to_point(450, 130)
-		#if self.have_ball == 1  and abs(angle) < math.pi/12 :
-			
 
-		if time.time() > self.last_kicker_action + 3 and self.our_attacker.get_displacement_to_point(self.ball.x, self.ball.y) > 30:
-		   	self.have_ball = 0
-		   	self.last_kicker_action = time.time()
-		   	return 'open_catcher'
-		
-		
-		displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
-		return self.calculate_motor_speed(displacement, angle)
+		elif not (distance is None):
 
+			if abs(angle) > math.pi/12:
 
-
-	def calculate_motor_speed(self, distance, angle):
-
-
-		angle_thresh = math.pi/18
-		distance_threshhold = 20
-
-		if not (distance is None):
-
-			if distance == 0 :
-				self.last_kicker_action = time.time()
-				return 'kick'
-
-			if distance ==0 and abs(angle) > angle_thresh  :
-				if angle > 0:
-					return 'turn_left'
-				if angle < 0:
-					return 'turn_right'
-
-			if abs(angle) > angle_thresh:
-       
 				if angle > 0 :
 					return 'turn_left'
 				elif angle <0 :
 					return 'turn_right'
 
-			elif distance > 50:
+			elif distance > 50 :
 				return 'drive'
 				
-
-			else:
+			elif distance > 30:
 				return 'drive_slow'
+
+
+
+class AttackerShoot:
+
+
+	def __init__(self, world):
+		self.world = world
+
+	
+		self.our_attacker = self.world.our_attacker
+		self.ball = self.world.ball
+		zone = self.world._pitch._zones[self.world.our_attacker.zone]
+		min_x, max_x, min_y, max_y  = zone.boundingBox()
+		self.goal_x=480
+		self.goal_y=160
+		self.center_x=315
+		self.center_y=160
+
+			
+
+	def pick_action(self):
+
+		distance, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
+		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
+		
+		if distance < 50 and angle_to_goal < math.pi/12:
+			self.our_attacker.catcher='open'
+			return 'kick'
+
+		elif distance < 50 and angle_to_goal > math.pi/12:
+
+			if angle_to_goal > 0 :
+				return 'turn_left'
+			elif angle_to_goal <0 :
+				return 'turn_right'
+
+		elif distance > 50 and angle < math.pi/12:
+			
+			return 'drive_slow'
+		
+		elif distance > 50 and angle > math.pi/12:
+
+			if angle > 0 :
+				return 'turn_left'
+			elif angle <0 :
+				return 'turn_right'
+
+
+
+
+
+
+
 
 
 

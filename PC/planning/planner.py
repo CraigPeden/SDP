@@ -9,7 +9,8 @@ class Planner:
     def __init__(self, our_side, pitch_num, our_color):
 		self._world = World(our_side, pitch_num)
 		self._world.our_defender.catcher_area = {'width' : 40, 'height' : 45, 'front_offset' : 12} #10
-		self._world.our_attacker.catcher_area = {'width' : 30, 'height' : 35, 'front_offset' : 14}
+		self._world.our_attacker.catcher_area = {'width' : 20, 'height' : 30, 'front_offset' : 14}
+		self._world.our_attacker.catcher='open'
 		self.our_side = our_side
 		self.our_color = our_color
 		#needs to be checked
@@ -22,7 +23,8 @@ class Planner:
 		elif (our_side == 'right' and our_color == 'yellow'):
 			self.robot_role = 'attacker'
 			
-		self.attack_strategy = AttackerGrabShoot(self._world)
+		self.attacker_grab_strategy = AttackerGrab(self._world)
+		self.attacker_shoot_strategy= AttackerShoot(self._world)
 		self.BALL_VELOCITY_THRESH = 10	
       
     def update_world(self, position_dictionary):
@@ -51,11 +53,19 @@ class Planner:
 				self._robot_current_strategy = self.attack_strategy
 				print 'DefenderGrabPass'
 				return self._robot_current_strategy.pick_action()
-		else:
+		
+
+		elif self.robot_role == 'attacker':
 			#Our robot is an attacker
 			if self._world.pitch.zones[our_attacker.zone].isInside(ball.x, ball.y):
-				self._robot_current_strategy = self.attack_strategy
-				return self._robot_current_strategy.pick_action()
+				if our_attacker.has_ball(ball):
+					print 'AttackerShoot'
+					self._robot_current_strategy = self.attacker_shoot_strategy
+					return self._robot_current_strategy.pick_action()
+				else:
+					print 'AttackerGrab'
+					self._robot_current_strategy = self.attacker_grab_strategy
+					return self._robot_current_strategy.pick_action()
 		
 			
 """
