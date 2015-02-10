@@ -28,6 +28,7 @@ class AttackerGrabShoot:
 		#displacement, angle = self.our_attacker.get_direction_to_point(450, 130)
 		#if self.have_ball == 1  and abs(angle) < math.pi/12 :
 		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 1:
+			displacement, angle = self.our_attacker.get_direction_to_point(460, 130)
 			return self.calculate_motor_speed(0, angle)
 
 		if time.time() > self.last_kicker_action + 3 and self.our_attacker.get_displacement_to_point(self.ball.x, self.ball.y) > 50:
@@ -35,13 +36,9 @@ class AttackerGrabShoot:
 		   	self.have_ball = 0
 		   	return 'open_catcher'
 		
-		else:
-
 		
-		   #if our catcher is closed than we will open it since our goal is to grab the ball
-
-			displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
-			self.calculate_motor_speed(displacement, angle)
+		displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
+		return self.calculate_motor_speed(displacement, angle)
 
 
 
@@ -49,7 +46,7 @@ class AttackerGrabShoot:
 
 
 		angle_thresh = math.pi/12
-		distance_threshhold = 25
+		distance_threshhold = 50
 
 		if not (distance is None):
 
