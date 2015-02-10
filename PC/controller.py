@@ -211,6 +211,9 @@ class Attacker_Controller(Robot_Controller):
 		  
 			comm.drive(3, 3)
 
+		elif action == 'backwards'
+			comm.drive(-4, 4)
+
 		elif action == 'stop':
 		  
 			comm.drive(0, 0)
