@@ -7,7 +7,7 @@ from utilities import *
 class Planner:
 
     def __init__(self, our_side, pitch_num, our_color):
-		self._world = World(our_side, pitch_num)
+		self._world = World(our_side, pitch_num, our_role)
 		self._world.our_defender.catcher_area = {'width' : 40, 'height' : 45, 'front_offset' : 12} #10
 		self._world.our_attacker.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 14}
 		self._world.our_attacker.catcher='open'
@@ -17,14 +17,15 @@ class Planner:
 		if (our_side == 'left' and our_color == 'blue'):
 			self.robot_role = 'attacker'
 		elif (our_side == 'left' and our_color == 'yellow'):
-			self.robot_role = 'attacker'
+			self.robot_role = 'defender'
 		elif (our_side == 'right' and our_color == 'blue'):
-			self.robot_role = 'attacker'
+			self.robot_role = 'defender'
 		elif (our_side == 'right' and our_color == 'yellow'):
 			self.robot_role = 'attacker'
 			
 		self.attacker_grab_strategy = AttackerGrab(self._world)
 		self.attacker_shoot_strategy= AttackerShoot(self._world)
+		self.defender_intercept_strategy= DefenderIntercept(self._world)
 		self.BALL_VELOCITY_THRESH = 10	
       
     def update_world(self, position_dictionary):
@@ -40,19 +41,9 @@ class Planner:
 		
 		if self.robot_role == 'defender':
 			#Our robot is a defender
-			if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y):
-				if self._world.ball.velocity > self.BALL_VELOCITY_THRESH and our_defender.has_ball(ball) == False:
 					print 'DefenderIntercept'					
-					self._robot_current_strategy = self.attack_strategy
+					self._robot_current_strategy = self.defender_intercept_strategy
 					return self._robot_current_strategy.pick_action()
-				else:
-					self._robot_current_strategy = self.attack_strategy
-					print 'DefenderGrabPass'	
-					return self._robot_current_strategy.pick_action()
-			else:
-				self._robot_current_strategy = self.attack_strategy
-				print 'DefenderGrabPass'
-				return self._robot_current_strategy.pick_action()
 		
 
 		elif self.robot_role == 'attacker':
@@ -61,13 +52,13 @@ class Planner:
 				if our_attacker.has_ball(ball):
 					print 'AttackerShoot'
 					print our_attacker.catcher
-					self._world.our_attacker.catcher_area = {'width' : 60, 'height' : 45, 'front_offset' : 10}
+					self._world.our_attacker.catcher_area = {'width' : 40, 'height' : 40, 'front_offset' : 10}
 					self._robot_current_strategy = self.attacker_shoot_strategy
 					return self._robot_current_strategy.pick_action()
 				else:
 					print 'AttackerGrab'
 					print our_attacker.catcher
-					self._world.our_attacker.catcher_area = {'width' : 25, 'height' : 35, 'front_offset' : 14}
+					self._world.our_attacker.catcher_area = {'width' : 30, 'height' : 35, 'front_offset' : 14}
 					self._robot_current_strategy = self.attacker_grab_strategy
 					return self._robot_current_strategy.pick_action()
 		

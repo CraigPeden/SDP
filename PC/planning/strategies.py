@@ -27,6 +27,9 @@ class AttackerGrab:
 
 		elif not (distance is None):
 
+			if abs(angle) > 11*math.pi/12:
+				return 'backwards'
+
 			if abs(angle) > math.pi/12:
 
 				if angle > 0 :
@@ -37,7 +40,7 @@ class AttackerGrab:
 			elif distance > 50 :
 				return 'drive'
 				
-			elif distance > 30:
+			else:
 				return 'drive_slow'
 
 
@@ -65,22 +68,22 @@ class AttackerShoot:
 		distance, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
 		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
 		
-		if distance < 50 and angle_to_goal < math.pi/12:
+		if distance < 30 and angle_to_goal < math.pi/12:
 			self.our_attacker.catcher='open'
 			return 'kick'
 
-		elif distance < 50 and angle_to_goal > math.pi/12:
+		elif distance < 30 and angle_to_goal > math.pi/12:
 
 			if angle_to_goal > 0 :
 				return 'turn_left'
 			elif angle_to_goal <0 :
 				return 'turn_right'
 
-		elif distance > 50 and angle < math.pi/12:
+		elif distance > 30 and angle < math.pi/12:
 			
 			return 'drive_slow'
 		
-		elif distance > 50 and angle > math.pi/12:
+		elif distance > 30 and angle > math.pi/12:
 
 			if angle > 0 :
 				return 'turn_left'
@@ -114,8 +117,6 @@ class DefenderIntercept:
 		self.our_attacker = world.our_attacker
 		self.their_defender = world.their_defender
 		self.their_attacker = world.their_attacker
-		self.center_x = (min_x + max_x)/2
-		self.center_y = (min_y + max_y)/2
 	
 
     def predict_y_intersection(self, world, predict_for_x, robot, full_width=False, bounce=False):
@@ -130,67 +131,37 @@ class DefenderIntercept:
         top_y = world._pitch.height - 60 if full_width else world.our_goal.y + (world.our_goal.width/2) - 30
         bottom_y = 60 if full_width else world.our_goal.y - (world.our_goal.width/2) + 30
         angle = robot.angle
-        if (x < predict_for_x and not (math.pi/2 < angle < 3*math.pi/2)) or (x > predict_for_x and (3*math.pi/2 > angle > math.pi/2)):
-            if bounce:
-                if not (0 <= (y + math.tan(angle) * (predict_for_x - x)) <= world._pitch.height):
-                    bounce_pos = 'top' if (y + math.tan(angle) * (predict_for_x - x)) > world._pitch.height else 'bottom'
-                    x += (world._pitch.height - y) / math.tan(angle) if bounce_pos == 'top' else (0 - y) / math.tan(angle)
-                    y = world._pitch.height if bounce_pos == 'top' else 0
-                    angle = (-angle) % (2*math.pi)
-            predicted_y = (y + math.tan(angle) * (predict_for_x - x))
-            # Correcting the y coordinate to the closest y coordinate on the goal line:
-            if predicted_y > top_y:
-                return top_y
-            elif predicted_y < bottom_y:
-                return bottom_y
-            return predicted_y
-        else:
-            return None
+        predicted_y = (y + math.tan(angle) * (predict_for_x - x))
+           
+    	return predicted_y
 
 
 
     def pick_action(self):
 
-		if self.their_attacker.has_ball(self.ball):
-			predicted_y = self.predict_y_intersection(self.world, self.our_defender.x, self.their_attacker, bounce=False)
-		else:
+		if self.ball.velocity > 5:
 			predicted_y = self.predict_y_intersection(self.world, self.our_defender.x, self.ball, bounce=False)
-	
-		distance, angle = self.our_attacker.get_direction_to_point(self.our_defender.x, 100)
-		if distance < self.DISTANCE_THRESH:
-			if math.abs(angle) < self.ANGLE_THRESH:
-				return 'kick'
-			elif angle < 0 :
-				return 'turn_right'
+			distance, angle = self.our_defender.get_direction_to_point(self.our_defender.x, predicted_y)
+		
+			if abs(angle) > 11*math.pi/12:
+				return 'backwards'
+
+			elif abs(angle) > math.pi/12:
+
+				if angle > 0 :
+					return 'turn_left'
+				elif angle <0 :
+					return 'turn_right'
+
+			elif distance > 50 :
+				return 'drive'
+				
 			else:
-				return 'turn_left'
-		else:
-			return self.calculate_motor_speed(distance, angle)
+				return 'drive_slow'
 
-
-
-    def calculate_motor_speed(self, distance, angle):
-
-
-        angle_thresh = math.pi/7
-        distance_threshhold = 15
-
-        if not (distance is None):
-
-            if distance < distance_threshhold:
-                return 'stop'
-
-            elif abs(angle) > angle_thresh:
-       
-                if angle > 0 :
-                    return 'turn_left'
-                elif angle <0 :
-                    return 'turn_right'
-
-        else:
-           
-             return 'drive'
-
+			
+	
+	
 
 
 class DefenderGrabPass:

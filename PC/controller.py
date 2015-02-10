@@ -20,7 +20,7 @@ class Controller:
 	Primary source of robot control. Ties vision and planning together.
 	"""
 
-	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+	def __init__(self, pitch, color, our_side, our_role, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
 		"""
 		Entry point for the SDP system.
 
@@ -29,7 +29,7 @@ class Controller:
 			[string] comm_port              port number for the arduino
 			[int] pitch                     0 - main pitch, 1 - secondary pitch
 			[string] our_side               the side we're on - 'left' or 'right'
-		[int] role                      0 if attacker        1 if defender
+		
 			*[int] port                     The camera port to take the feed from
 			*[Robot_Controller] attacker    Robot controller object - Attacker Robot has a RED
 											power wire
@@ -64,7 +64,7 @@ class Controller:
 		self.postprocessing = Postprocessing()
 
 		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, our_role=our_role)
 
 		# Set up GUI
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
@@ -184,7 +184,7 @@ class Attacker_Controller(Robot_Controller):
 		if action == 'grab':
 
 			comm.grab()
-			time.sleep(1)
+			time.sleep(0.5)
 
 		elif action == 'open_catcher':
 			   
@@ -192,21 +192,26 @@ class Attacker_Controller(Robot_Controller):
 	
 		elif action == 'kick':
 
+			comm.stop()
 			comm.kick()
-			time.sleep(1)
+			time.sleep(0.5)
 
 		elif action == 'turn_left':
 
 		  
-			comm.drive(-3, 3)
+			comm.drive(-4, 4)
 
 		elif action == 'turn_right':
 		  
-			comm.drive(3, -3)
+			comm.drive(4, -4)
+
+		elif action == 'backwards':
+		  
+			comm.drive(-4, -4)
 
 		elif action == 'drive':
 		  
-			comm.drive(4, 4)
+			comm.drive(5, 5)
 		elif action == 'drive_slow':
 		  
 			comm.drive(3, 3)
@@ -234,13 +239,14 @@ if __name__ == '__main__':
 	parser.add_argument("pitch", help="[0] Main pitch, [1] Secondary pitch")
 	parser.add_argument("side", help="The side of our defender ['left', 'right'] allowed.")
 	parser.add_argument("color", help="The color of our team - ['yellow', 'blue'] allowed.")
+	parser.add_argument("our_role", help="The color of our team - ['yellow', 'blue'] allowed.")
 	parser.add_argument(
 		"-n", "--nocomms", help="Disables sending commands to the robot.", action="store_true")
 
 	args = parser.parse_args()
 	if args.nocomms:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side, comms=0).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role , comms=0).wow()
 	else:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role).wow()
