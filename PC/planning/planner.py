@@ -6,22 +6,16 @@ from utilities import *
 
 class Planner:
 
-    def __init__(self, our_side, pitch_num, our_color):
-		self._world = World(our_side, pitch_num, our_role)
+    def __init__(self, our_side, pitch_num, our_color, our_role):
+		self._world = World(our_side, pitch_num)
 		self._world.our_defender.catcher_area = {'width' : 40, 'height' : 45, 'front_offset' : 12} #10
 		self._world.our_attacker.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 14}
 		self._world.our_attacker.catcher='open'
 		self.our_side = our_side
 		self.our_color = our_color
+		self.robot_role = our_role
 		#needs to be checked
-		if (our_side == 'left' and our_color == 'blue'):
-			self.robot_role = 'attacker'
-		elif (our_side == 'left' and our_color == 'yellow'):
-			self.robot_role = 'defender'
-		elif (our_side == 'right' and our_color == 'blue'):
-			self.robot_role = 'defender'
-		elif (our_side == 'right' and our_color == 'yellow'):
-			self.robot_role = 'attacker'
+
 			
 		self.attacker_grab_strategy = AttackerGrab(self._world)
 		self.attacker_shoot_strategy= AttackerShoot(self._world)
