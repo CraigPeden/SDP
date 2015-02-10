@@ -16,273 +16,227 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class Controller:
-    """
-    Primary source of robot control. Ties vision and planning together.
-    """
+	"""
+	Primary source of robot control. Ties vision and planning together.
+	"""
 
-    def __init__(self, pitch, color, our_side, role, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
-        """
-        Entry point for the SDP system.
+	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+		"""
+		Entry point for the SDP system.
 
-        Params:
-            [int] video_port                port number for the camera
-            [string] comm_port              port number for the arduino
-            [int] pitch                     0 - main pitch, 1 - secondary pitch
-            [string] our_side               the side we're on - 'left' or 'right'
-	    [int] role                      0 if attacker        1 if defender
-            *[int] port                     The camera port to take the feed from
-            *[Robot_Controller] attacker    Robot controller object - Attacker Robot has a RED
-                                            power wire
-            *[Robot_Controller] defender    Robot controller object - Defender Robot has a YELLOW
-                                            power wire
-        """
-        assert pitch in [0, 1]
-        assert color in ['yellow', 'blue']
-        assert our_side in ['left', 'right']
-	assert role in [0, 1]
+		Params:
+			[int] video_port                port number for the camera
+			[string] comm_port              port number for the arduino
+			[int] pitch                     0 - main pitch, 1 - secondary pitch
+			[string] our_side               the side we're on - 'left' or 'right'
+		[int] role                      0 if attacker        1 if defender
+			*[int] port                     The camera port to take the feed from
+			*[Robot_Controller] attacker    Robot controller object - Attacker Robot has a RED
+											power wire
+			*[Robot_Controller] defender    Robot controller object - Defender Robot has a YELLOW
+											power wire
+		"""
+		assert pitch in [0, 1]
+		assert color in ['yellow', 'blue']
+		assert our_side in ['left', 'right']
+		
 
-        self.pitch = pitch
-	self.role = role
+		self.pitch = pitch
 
-        # Set up the Arduino communications
-        self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
 
-        # Set up camera for frames
-        self.camera = Camera(port=video_port, pitch=self.pitch)
-        frame = self.camera.get_frame()
-        center_point = self.camera.get_adjusted_center(frame)
+		# Set up the Arduino communications
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		self.arduino.raiseKicker()
 
-        # Set up vision
-        self.calibration = tools.get_colors(pitch)
-        self.vision = Vision(
-            pitch=pitch, color=color, our_side=our_side,
-            frame_shape=frame.shape, frame_center=center_point,
-            calibration=self.calibration)
+		# Set up camera for frames
+		self.camera = Camera(port=video_port, pitch=self.pitch)
+		frame = self.camera.get_frame()
+		center_point = self.camera.get_adjusted_center(frame)
 
-        # Set up postprocessing for vision
-        self.postprocessing = Postprocessing()
+		# Set up vision
+		self.calibration = tools.get_colors(pitch)
+		self.vision = Vision(
+			pitch=pitch, color=color, our_side=our_side,
+			frame_shape=frame.shape, frame_center=center_point,
+			calibration=self.calibration)
 
-        # Set up main planner
-        self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
+		# Set up postprocessing for vision
+		self.postprocessing = Postprocessing()
 
-        # Set up GUI
-        self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
+		# Set up main planner
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
 
-        self.color = color
-        self.side = our_side
+		# Set up GUI
+		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
 
-        self.preprocessing = Preprocessing()
+		self.color = color
+		self.side = our_side
+
+		self.preprocessing = Preprocessing()
 	#it doesn't matter whether it is an Attacker or a Defender Controller
-       	self.controller = Attacker_Controller()
+		self.controller = Attacker_Controller()
 
 
-    def wow(self):
-        """
-        Ready your sword, here be dragons.
-        """
-        counter = 1L
-        timer = time.clock()
-        try:
-            c = True
-            while c != 27:  # the ESC key
+	def wow(self):
+		"""
+		Ready your sword, here be dragons.
+		"""
+		counter = 1L
+		timer = time.clock()
+		try:
+			c = True
+			while c != 27:  # the ESC key
 
-                frame = self.camera.get_frame()
-                pre_options = self.preprocessing.options
-                # Apply preprocessing methods toggled in the UI
-                preprocessed = self.preprocessing.run(frame, pre_options)
-                frame = preprocessed['frame']
-                if 'background_sub' in preprocessed:
-                    cv2.imshow('bg sub', preprocessed['background_sub'])
-                # Find object positions
-                # model_positions have their y coordinate inverted
+				frame = self.camera.get_frame()
+				pre_options = self.preprocessing.options
+				# Apply preprocessing methods toggled in the UI
+				preprocessed = self.preprocessing.run(frame, pre_options)
+				frame = preprocessed['frame']
+				if 'background_sub' in preprocessed:
+					cv2.imshow('bg sub', preprocessed['background_sub'])
+				# Find object positions
+				# model_positions have their y coordinate inverted
 
-                model_positions, regular_positions = self.vision.locate(frame)
-                model_positions = self.postprocessing.analyze(model_positions)
+				model_positions, regular_positions = self.vision.locate(frame)
+				model_positions = self.postprocessing.analyze(model_positions)
 
-                # Find appropriate action
-                self.planner.update_world(model_positions)
-                
-		robot_action = self.planner.plan()
+				# Find appropriate action
+				self.planner.update_world(model_positions)
+				
+				robot_action = self.planner.plan()
 
-                
+				
 
-                if self.controller is not None:
-                    self.controller.execute(self.arduino, robot_action)
-       
+				if self.controller is not None:
+					self.controller.execute(self.arduino, robot_action)
+	   
 
-                # Information about the grabbers from the world
-                grabbers = {
-                    'our_defender': self.planner._world.our_defender.catcher_area,
-                    'our_attacker': self.planner._world.our_attacker.catcher_area
-                }
+				# Information about the grabbers from the world
+				grabbers = {
+					'our_defender': self.planner._world.our_defender.catcher_area,
+					'our_attacker': self.planner._world.our_attacker.catcher_area
+				}
 
-                # Information about states
-                robotState = 'test'
-               
+				# Information about states
+				robotState = 'test'
+			   
 
-                # Use 'y', 'b', 'r' to change color.
-                c = waitKey(2) & 0xFF
-                actions = []
-                fps = float(counter) / (time.clock() - timer)
-                # Draw vision content and actions
+				# Use 'y', 'b', 'r' to change color.
+				c = waitKey(2) & 0xFF
+				actions = []
+				fps = float(counter) / (time.clock() - timer)
+				# Draw vision content and actions
 
-                self.GUI.draw(
-                    frame, model_positions, actions, regular_positions, fps, robotState,
-                   "we dont need it", robot_actions, "we dont need it", grabbers,
-                    our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
-                counter += 1
+				self.GUI.draw(
+					frame, model_positions, actions, regular_positions, fps, robotState,
+				   "we dont need it", robot_action, "we dont need it", grabbers,
+					our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
+				counter += 1
 
-        except:
-            if self.controller is not None:
-                self.controller.shutdown(self.arduino)
-            raise
+		except:
+			if self.controller is not None:
+				self.controller.shutdown(self.arduino)
+			raise
 
-        finally:
-            # Write the new calibrations to a file.
-            tools.save_colors(self.pitch, self.calibration)
-            if self.controller is not None:
-                self.controller.shutdown(self.arduino)
+		finally:
+			# Write the new calibrations to a file.
+			tools.save_colors(self.pitch, self.calibration)
+			if self.controller is not None:
+				self.controller.shutdown(self.arduino)
 
 
 class Robot_Controller(object):
-    """
-    Robot_Controller superclass for robot control.
-    """
+	"""
+	Robot_Controller superclass for robot control.
+	"""
 
-    def __init__(self):
-        """
-        Connect to Brick and setup Motors/Sensors.
-        """
-        self.current_speed = 0
+	def __init__(self):
+		"""
+		Connect to Brick and setup Motors/Sensors.
+		"""
+		self.current_speed = 0
 
-    def shutdown(self, comm):
-        # TO DO
-            pass
-
-
-class Defender_Controller(Robot_Controller):
-    """
-    Defender implementation.
-    """
-
-    def __init__(self):
-        """
-        Do the same setup as the Robot class, as well as anything specific to the Defender.
-        """
-        super(Defender_Controller, self).__init__()
-
-    def execute(self, comm, action):
-        """
-        Execute robot action.
-           return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
-        """
-        
-      	print action
-	if action == 'grab':
-	  
-	  comm.grab()
-
-	elif action == 'open_catcher':
-	  
-	  comm.kick()
-
-	elif action == 'turn_left':
-	  
-	  comm.drive(-2, 2)
-
-	elif action == 'turn_right':
-	  
-	  comm.drive(2, -2)
-
-	elif action == 'drive':
-	  
-	  comm.drive(4, 4)
-
-	elif action == 'stop':
-	  
-	  comm.drive(0, 0)
-                
-            
+	def shutdown(self, comm):
+		# TO DO
+			pass
 
 
-
-
-    def shutdown(self, comm):
-        comm.drive(0, 0)
 
 
 class Attacker_Controller(Robot_Controller):
-    """
-    Attacker implementation.
-    """
+	"""
+	Attacker implementation.
+	"""
 
-    def __init__(self):
-        """
-        Do the same setup as the Robot class, as well as anything specific to the Attacker.
-        """
-        super(Attacker_Controller, self).__init__()
+	def __init__(self):
+		"""
+		Do the same setup as the Robot class, as well as anything specific to the Attacker.
+		"""
+		super(Attacker_Controller, self).__init__()
 
-    def execute(self, comm, action):
-        """
-        Execute robot action.
-           return {'left_motor_speed': 0, 'right_motor_speed': 0, 'kicker_activated': 0, 'catcher_activated': 1, 'duration': 0.5}
-        """
-        
-        print action
-	if action == 'grab':
-	  comm.stop()
-	  comm.grab()
+	def execute(self, comm, action):
+		"""
+		Execute robot action.
+		"""
+		if action != None:
+			print action    
+		if action == 'grab':
+			comm.grab()
 
-	elif action == 'open_catcher':
-
-	  comm.stop()	  
-	  comm.kick()
+		elif action == 'open_catcher':
+			   
+			comm.raiseKicker()
 	
-	elif action == 'kick':
-	  comm.stop()
-	  comm.kick()
+		elif action == 'kick':
+			
+			comm.kick()
 
-	elif action == 'turn_left':
-	  
-	  comm.drive(-3, 3)
+		elif action == 'turn_left':
 
-	elif action == 'turn_right':
-	  
-	  comm.drive(3, -3)
+		  
+			comm.drive(-3, 3)
 
-	elif action == 'drive':
-	  
-	  comm.drive(4, 4)
+		elif action == 'turn_right':
+		  
+			comm.drive(3, -3)
 
-	elif action == 'stop':
-	  
-	  comm.drive(0, 0)
-        
-            
-            
-            
+		elif action == 'drive':
+		  
+			comm.drive(5, 5)
+		elif action == 'drive_slow':
+		  
+			comm.drive(3, 3)
 
-    def shutdown(self, comm):
-        comm.drive(0, 0)
+		elif action == 'stop':
+		  
+			comm.drive(0, 0)
+		else:
+			comm.stop()
+		
+			
+			
+			
+
+	def shutdown(self, comm):
+		comm.drive(0, 0)
 
 
 
 
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("pitch", help="[0] Main pitch, [1] Secondary pitch")
-    parser.add_argument("side", help="The side of our defender ['left', 'right'] allowed.")
-    parser.add_argument("color", help="The color of our team - ['yellow', 'blue'] allowed.")
-    parser.add_argument("role", help="Whether we are attacker or defender - ['0', '1'] allowed.")
-    parser.add_argument(
-        "-n", "--nocomms", help="Disables sending commands to the robot.", action="store_true")
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument("pitch", help="[0] Main pitch, [1] Secondary pitch")
+	parser.add_argument("side", help="The side of our defender ['left', 'right'] allowed.")
+	parser.add_argument("color", help="The color of our team - ['yellow', 'blue'] allowed.")
+	parser.add_argument(
+		"-n", "--nocomms", help="Disables sending commands to the robot.", action="store_true")
 
-    args = parser.parse_args()
-    if args.nocomms:
-        c = Controller(
-            pitch=int(args.pitch), color=args.color, our_side=args.side, role=args.role , comms=0).wow()
-    else:
-        c = Controller(
-            pitch=int(args.pitch), color=args.color, our_side=args.side, role=int(args.role)).wow()
+	args = parser.parse_args()
+	if args.nocomms:
+		c = Controller(
+			pitch=int(args.pitch), color=args.color, our_side=args.side, comms=0).wow()
+	else:
+		c = Controller(
+			pitch=int(args.pitch), color=args.color, our_side=args.side).wow()

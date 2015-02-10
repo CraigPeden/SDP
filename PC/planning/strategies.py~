@@ -1,6 +1,5 @@
 import math
 from random import randint
-import time
 
 
 class AttackerGrabShoot:
@@ -14,47 +13,50 @@ class AttackerGrabShoot:
 		self.ball = self.world.ball
 		zone = self.world._pitch._zones[self.world.our_attacker.zone]
 		min_x, max_x, min_y, max_y  = zone.boundingBox()
-
-		self.have_ball = 0
-		self.last_kicker_action = time.time()
-			
+		self.center_x = (min_x + max_x)/2
+		self.center_y = (min_y + max_y)/2
+		self.goal_x = 250
+		self.goal_y = 150
+	
 
 	def pick_action(self):
 
-		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 0:
-			self.have_ball == 1
-			return 'grab'
+		if self.our_attacker.has_ball(self.ball):
 			#We have the ball so we need to get into a shooting position and shoot
-		#displacement, angle = self.our_attacker.get_direction_to_point(450, 130)
-		#if self.have_ball == 1  and abs(angle) < math.pi/12 :
-		if self.our_attacker.can_catch_ball(self.ball) and self.have_ball == 1:
-			return self.calculate_motor_speed(0, angle)
-
-		if time.time() > self.last_kicker_action + 3 and self.our_attacker.get_displacement_to_point(self.ball.x, self.ball.y) > 50:
-		   	self.last_kicker_action = time.time()
-		   	self.have_ball = 0
-		   	return 'open_catcher'
-		
+			distance_to_zone_center = self.our_attacker.get_displacement_to_point(self.center_x, self.center_y)
+			if distance_to_zone_center < 20:
+				#We have reached the center of the zone
+				angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
+				if math.abs(angle_to_goal) < pi/12:
+					return 'kick'
+				elif angle_to_goal < 0:
+					return 'turn_right'
+				else:
+					return 'turn_left'
+			else:
+				displacement, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
+				return self.calculate_motor_speed(displacement, angle)
 		else:
-
 		
 		   #if our catcher is closed than we will open it since our goal is to grab the ball
+			if self.our_attacker.catcher == 'closed':
+				self.our_attacker.catcher = 'open'
+				return 'open_catcher'
 
 			displacement, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
-			self.calculate_motor_speed(displacement, angle)
-
-
+			if self.our_attacker.can_catch_ball(self.ball):
+				return 'grab'
+		   
+			else:
+				return self.calculate_motor_speed(displacement, angle)
 
 	def calculate_motor_speed(self, distance, angle):
 
 
 		angle_thresh = math.pi/12
-		distance_threshhold = 25
+		distance_threshhold = 15
 
 		if not (distance is None):
-
-			if distance == 0 and angle<angle_thresh:
-				return 'kick'
 
 			if distance < distance_threshhold:
 				return 'stop'
@@ -67,10 +69,9 @@ class AttackerGrabShoot:
 					return 'turn_right'
 
 			else:
-				if(distance < 100):
-					return 'drive_slow'
-				else:
-					return 'drive'
+           
+				return 'drive'
+
 
 
 
