@@ -21,9 +21,6 @@ class AttackerGrab:
 
         elif not (distance is None):
 
-            if abs(angle) > 11 * math.pi / 12:
-                return 'backwards'
-
             if abs(angle) > math.pi / 12:
 
                 if angle > 0:
@@ -125,22 +122,24 @@ class DefenderIntercept:
         return self.calculate_motor_speed(distance, angle)
 
 
+
     def calculate_motor_speed(self, distance, angle):
         angle_thresh = math.pi / 7
         distance_threshhold = 15
         if not (distance is None):
 
-        if distance < distance_threshhold:
-            return 'stop'
 
-        elif abs(angle) > angle_thresh:
+	        if distance < distance_threshhold:
+	            return 'stop'
 
-            if angle > 0:
-                return 'turn_left'
-            elif angle < 0:
-                return 'turn_right'
-        else:
-            return 'drive'
+	        elif abs(angle) > angle_thresh:
+
+	            if angle > 0:
+	                return 'turn_left'
+	            elif angle < 0:
+	                return 'turn_right'
+	        else:
+	            return 'drive'
 
 
 class DefenderGrabPass:
