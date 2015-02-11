@@ -201,6 +201,7 @@ class RobotTracker(Tracker):
             x_offset    The offset from the uncropped image - to be added to the final values
             y_offset    The offset from the uncropped image - to be added to the final values
         """
+        
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
@@ -213,15 +214,26 @@ class RobotTracker(Tracker):
             # Mask the original image
             mask_frame = cv2.cvtColor(mask_frame, cv2.COLOR_BGR2GRAY)
             frame = cv2.bitwise_and(frame, frame, mask=mask_frame)
+            
+            frameB = cv2.medianBlur(frame, 5)
 
-            adjustment = self.calibration['dot']
-            contours = self.get_contours(frame, adjustment)
 
-            if contours and len(contours) > 0:
+            th3 = cv2.adaptiveThreshold(frameB, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                                        cv2.THRESH_BINARY, 11, 2)
+            
+            circles = cv2.HoughCircles(th3, cv2.cv.CV_HOUGH_GRADIENT, 1, 10,
+                                       param1=50, param2=30, minRadius=0, maxRadius=30)
+            
+            return Center(circles[0][0] + x_offset, circles[0][1] + y_offset)
+
+            #adjustment = self.calibration['dot']
+            #contours = self.get_contours(frame, adjustment)
+
+            #if contours and len(contours) > 0:
                 # Take the largest contour
-                contour = self.get_largest_contour(contours)
-                (x, y), radius = self.get_contour_centre(contour)
-                return Center(x + x_offset, y + y_offset)
+             #   contour = self.get_largest_contour(contours)
+              #  (x, y), radius = self.get_contour_centre(contour)
+               # return Center(x + x_offset, y + y_offset)
 
     def find(self, frame, queue):
         """
