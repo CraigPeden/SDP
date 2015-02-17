@@ -130,7 +130,7 @@ class Vision:
         """
         plane_height = 250.0
         robot_height = 20.0
-        coefficient = robot_height / plane_height
+        coefficient = robot_height / plane_height  """ this is why the dots are slightly offset """
 
         x = point[0]
         y = point[1]
