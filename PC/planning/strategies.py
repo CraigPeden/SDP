@@ -1,6 +1,6 @@
 import math
 import time
-
+from strategies_super import RobotStrategy
 
 class AttackerGrab:
 	def __init__(self, world):
@@ -70,40 +70,53 @@ class AttackerShoot:
 				
 
 
-	def pick_action(self):
+	def pick_action(self):			# I have rewritten this function with the methods in RobotStrategies
 
 		distance, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
 		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
 
-		if distance > 30 and abs(angle) < math.pi / 12:
+		if distance > 30:
+			 return go_to(self.center_x, self.center_y)
 
-			return 'drive_slow'
-		elif distance > 50 and abs(angle) > 11 * math.pi / 12:
-			return 'backwards'
+		elif abs(angle) > math.pi / 12:
+			return orient(self.goal_x, self.goal_y)
 
-		if abs(angle) > math.pi / 9:
-				if abs(angle) > math.pi / 4:
-					if angle > 0:
-						return 'turn_left'
-					elif angle < 0:
-						return 'turn_right'
-				else:
-					if angle > 0:
-						return 'turn_left_slow'
-					elif angle < 0:
-						return 'turn_right_slow'
-
-
-		elif distance < 30 and abs(angle_to_goal) < math.pi / 9:
+		elif distance < 30 and abs(angle_to_goal) < math.pi / 12:
 			self.our_attacker.catcher = 'open'
-			return 'kick'
+			return 'kick' 
 
-		elif distance < 30 and abs(angle_to_goal) > math.pi / 9:
 
-			if angle_to_goal > 0:
-				return 'turn_left_slow'
-			elif angle_to_goal < 0:
-				return 'turn_right_slow'
+
+
+		# if distance > 30 and abs(angle) < math.pi / 12:
+
+		# 	return 'drive_slow'
+		# elif distance > 50 and abs(angle) > 11 * math.pi / 12:
+		# 	return 'backwards'
+
+		# if abs(angle) > math.pi / 9:
+		# 		if abs(angle) > math.pi / 4:
+		# 			if angle > 0:
+		# 				return 'turn_left'
+		# 			elif angle < 0:
+		# 				return 'turn_right'
+		# 		else:
+		# 			if angle > 0:
+		# 				return 'turn_left_slow'
+		# 			elif angle < 0:
+		# 				return 'turn_right_slow'
+
+
+		# elif distance < 30 and abs(angle_to_goal) < math.pi / 9:
+		# 	self.our_attacker.catcher = 'open'
+		# 	return 'kick'
+
+		# elif distance < 30 and abs(angle_to_goal) > math.pi / 9:
+
+		# 	if angle_to_goal > 0:
+		# 		return 'turn_left_slow'
+		# 	elif angle_to_goal < 0:
+		# 		return 'turn_right_slow'
 
 
 class DefenderIntercept:

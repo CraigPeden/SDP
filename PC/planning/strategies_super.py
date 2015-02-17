@@ -18,8 +18,8 @@ class RobotStrategy:
 			self.center_x = 160
 			self.center_y = 160
 
-		self.angle_acc = 12  # somewhere between 9 and 15 ?
-		self.position_acc = 30  #must be changed in init_per_strategy -- particulary for ball catching methods
+		self.angle_acc = 12  	# somewhere between 9 and 15 ?
+		self.position_acc = 30  # must be changed in init_per_strategy -- particulary for ball catching methods
 
 		init_per_strategy()
 
@@ -62,10 +62,11 @@ class RobotStrategy:
 					elif angle < 0:
 						return 'turn_right_slow'
 
-	def go_fast(self, dest_x, dest_y, motor_speed=None):		
-		#an experimental method that allows for a less accurate and reversing approach to the ball with variable speed
+	def go_fast(self, dest_x, dest_y, motor_speed=None):	#fast to point optional motor speed	
 		
-		if motor_speed == None:
+		#an experimental method that allows for a less accurate and reversing approach to the ball with variable speed
+
+		if motor_speed == None:			#Superfluous?
 			motor_speed = 'drive'
 		else:
 			assert motor_speed in [ 'drive', 'drive_slow', 'drive_intercept' ]
@@ -76,7 +77,8 @@ class RobotStrategy:
 
 			return motor_speed
 
-		elif distance > self.position_acc and abs(angle) > math.pi - math.pi / self.angle_acc: #makes the robot reverse at the right speed
+		elif distance > self.position_acc and abs(angle) > math.pi - math.pi / self.angle_acc: 
+			#makes the robot reverse at the right speed
 			if motor_speed == 'drive_intercept' :
 				return 'backwards_intercept'
 			elif motor_speed == 'drive_slow':
@@ -91,19 +93,20 @@ class RobotStrategy:
 						return 'turn_right_slow'
 					elif angle < 0:
 						return 'turn_left_slow'
-
-				if abs(angle) >  3 * math.pi / self.angle_acc:  #large angle
+				elif abs(angle) >  3 * math.pi / self.angle_acc:  	#large angle
 					if angle > 0:
 						return 'turn_left'
 					elif angle < 0:
 						return 'turn_right'
-				else:									#small angle
+				else:												#small angle
 					if angle > 0:
 						return 'turn_left_slow'
 					elif angle < 0:
 						return 'turn_right_slow'
 
-	def orient(self, dest_x, dest_y):		#maybe it would be better to pass this function an angle
+	def orient(self, dest_x, dest_y):								#maybe it would be better to pass this function an angle
+
+		distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)
 
 		if abs(angle) > math.pi / self.angle_acc:
 
@@ -120,4 +123,25 @@ class RobotStrategy:
 
 
 
-		
+	def calculate_motor_speed(self, distance, angle):
+		angle_thresh = math.pi / 7
+		direction_threshhold = math.pi/7
+		distance_threshhold = 15
+		if not (distance is None):
+
+			
+
+			if distance < distance_threshhold:
+				return 'stop'
+
+			elif math.pi - abs(angle) < direction_threshhold:
+				return 'backwards_intercept' 		
+
+			elif abs(angle) > angle_thresh:
+
+				if angle > 0:
+					return 'turn_left'
+				elif angle < 0:
+					return 'turn_right'
+			else:
+				return 'drive_intercept'
