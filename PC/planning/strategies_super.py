@@ -4,8 +4,12 @@ class RobotStrategy:
 
 	def __init__(self, world):
 		self.world = world
-
+		
+		self.our_defender = self.world.our_defender
 		self.our_attacker = self.world.our_attacker
+		self.their_defender = self.world.their_defender
+		self.their_attacker = self.world.their_attacker
+
 		self.ball = self.world.ball
 		zone = self.world._pitch._zones[self.world.our_attacker.zone]
 		min_x, max_x, min_y, max_y = zone.boundingBox()
@@ -20,15 +24,6 @@ class RobotStrategy:
 
 		self.angle_acc = 12  	# somewhere between 9 and 15 ?
 		self.position_acc = 30  # must be changed in init_per_strategy -- particulary for ball catching methods
-
-		init_per_strategy()
-
-
-	def init_per_strategy(self):
-
-		#this is where any strategy specific instance variables should be created
-
-
 				
 
 
