@@ -32,17 +32,22 @@ class RobotStrategy:
 		
 
 
-	def go_to(self, dest_x, dest_y ):		#basic movement to a point defined by angle and position acc
+	def go_to(self, dest_x, dest_y, motor_speed='drive_slow'):		#basic movement to a point defined by angle and position acc
 
 		distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)  #either this method or the get direction to point needs to check for out of bounds
 
 		if distance > self.position_acc and abs(angle) < math.pi / self.angle_acc:
 
-			return 'drive_slow'  #may need drive_fast
+			return motor_speed  #may need drive_fast
 
 		elif distance > self.position_acc and abs(angle) > 11 * math.pi / self.angle_acc:
 
-			return 'backwards'
+			if motor_speed == 'drive_intercept' : #inverts motor speeds
+				return 'backwards_intercept'
+			elif motor_speed == 'drive_slow':
+				return 'backwards_slow'
+			else:
+				return 'backwards'
 
 		if abs(angle) > math.pi / self.angle_acc:
 
@@ -57,14 +62,11 @@ class RobotStrategy:
 					elif angle < 0:
 						return 'turn_right_slow'
 
-	def go_fast(self, dest_x, dest_y, motor_speed=None):	#fast to point optional motor speed	
+	def go_fast(self, dest_x, dest_y, motor_speed='drive_intercept'):	#fast to point optional motor speed	
 		
 		#an experimental method that allows for a less accurate and reversing approach to the ball with variable speed
 
-		if motor_speed == None:			#Superfluous?
-			motor_speed = 'drive'
-		else:
-			assert motor_speed in [ 'drive', 'drive_slow', 'drive_intercept' ]
+		assert motor_speed in [ 'drive', 'drive_slow', 'drive_intercept' ]
 
 		distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)  #either this method or the get direction to point needs to check for out of bounds
 
