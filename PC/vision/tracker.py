@@ -76,6 +76,7 @@ class Tracker(object):
 
         # Apply threshold to the masked image, no idea what the values mean
         return_val, threshold = cv2.threshold(frame_mask, 127, 255, 0)
+        #threshold = cv2.adaptiveThreshold(frame_mask, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
         # Find contours, they describe the masked image - our T
         contours, hierarchy = cv2.findContours(
