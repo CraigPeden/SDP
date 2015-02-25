@@ -173,6 +173,7 @@ class Attacker_Controller(Robot_Controller):
 		Do the same setup as the Robot class, as well as anything specific to the Attacker.
 		"""
 		super(Attacker_Controller, self).__init__()
+		self.last_kicker_action = time.time()
 
 	def execute(self, comm, action):
 		"""
@@ -183,18 +184,18 @@ class Attacker_Controller(Robot_Controller):
 
 		if action == 'grab':
 
+			comm.stop()
 			comm.grab()
-			time.sleep(0.5)
 
 		elif action == 'open_catcher':
-			   
+			comm.stop()   
 			comm.raiseKicker()
+
 	
 		elif action == 'kick':
 
 			comm.stop()
 			comm.kick()
-			time.sleep(0.5)
 
 		elif action == 'turn_left':
 
@@ -205,6 +206,15 @@ class Attacker_Controller(Robot_Controller):
 		  
 			comm.drive(4, -4)
 
+		elif action == 'turn_left_slow':
+
+		  
+			comm.drive(-3, 3)
+
+		elif action == 'turn_right_slow':
+		  
+			comm.drive(3, -3)
+
 		elif action == 'backwards':
 		  
 			comm.drive(-4, -4)
@@ -214,7 +224,7 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'drive':
 		  
-			comm.drive(5, 5)
+			comm.drive(4, 4)
 		elif action == 'drive_intercept':
 		  
 			comm.drive(7, 7)	

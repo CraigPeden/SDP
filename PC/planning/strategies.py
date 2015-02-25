@@ -1,5 +1,6 @@
 import math
-
+import time
+from strategies_super import RobotStrategy
 
 class AttackerGrab:
 	def __init__(self, world):
@@ -9,84 +10,119 @@ class AttackerGrab:
 		self.ball = self.world.ball
 		zone = self.world._pitch._zones[self.world.our_attacker.zone]
 		min_x, max_x, min_y, max_y = zone.boundingBox()
+		self.last_kicker_action = time.time()
 
 
 	def pick_action(self):
 
 		distance, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
 
-		if self.our_attacker.can_catch_ball(self.ball):
+		if self.our_attacker.can_catch_ball(self.ball) and time.time() > self.last_kicker_action + 2:
+
+			self.last_kicker_action = time.time()
 			self.our_attacker.catcher = 'closed'
 			return 'grab'
 
-		if self.our_attacker.can_catch_ball(self.ball) == False and self.our_attacker.catcher == 'closed':
+		if not self.our_attacker.can_catch_ball(self.ball) and self.our_attacker.catcher == 'closed' and time.time() > self.last_kicker_action + 1:
+
+			self.last_kicker_action = time.time()
 			self.our_attacker.catcher = 'open'
 			return 'open_catcher'
 
 		elif not (distance is None):
 
 
-			if abs(angle) > math.pi / 12:
+			if abs(angle) > math.pi / 9:
+				if abs(angle) > math.pi / 4:
+					if angle > 0:
+						return 'turn_left'
+					elif angle < 0:
+						return 'turn_right'
+				else:
+					if angle > 0:
+						return 'turn_left_slow'
+					elif angle < 0:
+						return 'turn_right_slow'
 
-				if angle > 0:
-					return 'turn_left'
-				elif angle < 0:
-					return 'turn_right'
-
-			elif distance > 50:
+			elif distance > 70:
 				return 'drive'
 
 			else:
 				return 'drive_slow'
 
 
-class AttackerShoot:
-	def __init__(self, world):
-		self.world = world
+class AttackerShoot(RobotStrategy):
 
-		self.our_attacker = self.world.our_attacker
-		self.ball = self.world.ball
-		zone = self.world._pitch._zones[self.world.our_attacker.zone]
-		min_x, max_x, min_y, max_y = zone.boundingBox()
-		self.goal_x = self.world.their_goal.x 
-		self.goal_y = self.world.their_goal.y + self.world.their_goal.height/2
-		if self.world.our_side == 'left':
-			self.center_x = 350
-			self.center_y = 160
-		else:
-			self.center_x = 120
-			self.center_y = 160
+	def __init__(self, world):
+			RobotStrategy.__init__(self)
+
+			#any extra variables or overrides can go here, all the rest is in RobotStrategy
+
+	# def __init__(self, world):
+	# 	self.world = world
+
+	# 	self.our_attacker = self.world.our_attacker
+	# 	self.ball = self.world.ball
+	# 	zone = self.world._pitch._zones[self.world.our_attacker.zone]
+	# 	min_x, max_x, min_y, max_y = zone.boundingBox()
+	# 	self.goal_x = self.world.their_goal.x 
+	# 	self.goal_y = self.world.their_goal.y + self.world.their_goal.height/2
+	# 	if self.world.our_side == 'left':
+	# 		self.center_x = 350
+	# 		self.center_y = 160
+	# 	else:
+	# 		self.center_x = 160
+	# 		self.center_y = 160
 				
 
 
-	def pick_action(self):
+	def pick_action(self):			# I have rewritten this function with the methods in RobotStrategy
 
 		distance, angle = self.our_attacker.get_direction_to_point(self.center_x, self.center_y)
 		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
 
-		if distance < 30 and angle_to_goal < math.pi / 12:
+		if distance > 30:
+			 return go_to(self.center_x, self.center_y)
+
+		elif abs(angle) > math.pi / 12:
+			return orient(self.goal_x, self.goal_y)
+
+		elif distance < 30 and abs(angle_to_goal) < math.pi / 12:
 			self.our_attacker.catcher = 'open'
-			return 'kick'
+			return 'kick' 
 
-		elif distance < 30 and angle_to_goal > math.pi / 12:
 
-			if angle_to_goal > 0:
-				return 'turn_left'
-			elif angle_to_goal < 0:
-				return 'turn_right'
 
-		elif distance > 30 and angle < math.pi / 12:
 
-			return 'drive_slow'
-		elif distance > 50 and angle > 11 * math.pi / 12:
-			return 'backwards'
+		# if distance > 30 and abs(angle) < math.pi / 12:
 
-		elif distance > 30 and angle > math.pi / 12:
+		# 	return 'drive_slow'
+		# elif distance > 50 and abs(angle) > 11 * math.pi / 12:
+		# 	return 'backwards'
 
-			if angle > 0:
-				return 'turn_left'
-			elif angle < 0:
-				return 'turn_right'
+		# if abs(angle) > math.pi / 9:
+		# 		if abs(angle) > math.pi / 4:
+		# 			if angle > 0:
+		# 				return 'turn_left'
+		# 			elif angle < 0:
+		# 				return 'turn_right'
+		# 		else:
+		# 			if angle > 0:
+		# 				return 'turn_left_slow'
+		# 			elif angle < 0:
+		# 				return 'turn_right_slow'
+
+
+		# elif distance < 30 and abs(angle_to_goal) < math.pi / 9:
+		# 	self.our_attacker.catcher = 'open'
+		# 	return 'kick'
+
+		# elif distance < 30 and abs(angle_to_goal) > math.pi / 9:
+
+		# 	if angle_to_goal > 0:
+		# 		return 'turn_left_slow'
+		# 	elif angle_to_goal < 0:
+		# 		return 'turn_right_slow'
 
 
 class DefenderIntercept:
@@ -112,7 +148,7 @@ class DefenderIntercept:
 	def pick_action(self):
 
 
-		if self.ball.velocity > -0.5:
+		if self.ball.velocity > 0.5:
 			if 	self.our_defender.catcher == 'open':
 				self.our_defender.catcher = 'closed'
 				return 'grab'
@@ -187,7 +223,10 @@ class DefenderGrab:
 
 	def pick_action(self):
 
-		distance, angle = self.our_attacker.get_direction_to_point(self.ball.x, self.ball.y)
+		distance, angle = self.our_defender.get_direction_to_point(self.ball.x, self.ball.y)
+
+		
+
 
 		if self.our_defender.can_catch_ball(self.ball):
 			self.our_defender.catcher = 'closed'
@@ -197,13 +236,18 @@ class DefenderGrab:
 
 
 			if abs(angle) > math.pi / 12:
+				if abs(angle) > math.pi / 4:
+					if angle > 0:
+						return 'turn_left'
+					elif angle < 0:
+						return 'turn_right'
+				else:
+					if angle > 0:
+						return 'turn_left_slow'
+					elif angle < 0:
+						return 'turn_right_slow'
 
-				if angle > 0:
-					return 'turn_left'
-				elif angle < 0:
-					return 'turn_right'
-
-			elif distance > 50:
+			elif distance > 100:
 				return 'drive'
 
 			else:
