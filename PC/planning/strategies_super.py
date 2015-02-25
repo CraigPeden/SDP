@@ -1,4 +1,4 @@
-
+import math
 
 class RobotStrategy:
 
@@ -85,7 +85,7 @@ class RobotStrategy:
 
 		if abs(angle) > math.pi / self.angle_acc:
 
-				if abs (angle) > math.pi - math.pi / self.angle_acc  #if near to a backwards angle then turn to that
+				if abs (angle) > math.pi - math.pi / self.angle_acc:  #if near to a backwards angle then turn to that
 					if angle > 0:
 						return 'turn_right_slow'
 					elif angle < 0:

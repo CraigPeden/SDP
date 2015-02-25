@@ -130,7 +130,7 @@ class Vision:
         """
         plane_height = 250.0
         robot_height = 20.0
-        coefficient = robot_height / plane_height  """ this is why the dots are slightly offset """
+        coefficient = robot_height / plane_height  #""" this is why the dots are slightly offset """
 
         x = point[0]
         y = point[1]
@@ -263,8 +263,7 @@ class Camera(object):
             ]
 
     def fix_radial_distortion(self, frame):
-        return cv2.undistort(
-            frame, self.c_matrix, self.dist, None, self.nc_matrix)
+        return cv2.undistort(frame, self.c_matrix, self.dist, None, self.nc_matrix)
 
     def get_adjusted_center(self, frame):
         return (320 - self.crop_values[0], 240 - self.crop_values[2])

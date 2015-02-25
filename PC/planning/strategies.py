@@ -54,7 +54,7 @@ class AttackerGrab:
 class AttackerShoot(RobotStrategy):
 
 	def __init__(self, world):
-			RobotStrategy.__init__(self)
+			RobotStrategy.__init__(self, world)
 
 			#any extra variables or overrides can go here, all the rest is in RobotStrategy
 
