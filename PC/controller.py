@@ -186,6 +186,7 @@ class Attacker_Controller(Robot_Controller):
 
 			comm.stop()
 			comm.grab()
+			time.sleep(0.2)
 
 		elif action == 'open_catcher':
 			comm.stop()   
@@ -196,6 +197,7 @@ class Attacker_Controller(Robot_Controller):
 
 			comm.stop()
 			comm.kick()
+			time.sleep(0.5)
 
 		elif action == 'turn_left':
 
