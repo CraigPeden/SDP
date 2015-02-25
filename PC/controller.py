@@ -20,7 +20,7 @@ class Controller:
 	Primary source of robot control. Ties vision and planning together.
 	"""
 
-	def __init__(self, pitch, color, our_side, our_role, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
 		"""
 		Entry point for the SDP system.
 
@@ -64,7 +64,7 @@ class Controller:
 		self.postprocessing = Postprocessing()
 
 		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, our_role=our_role)
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
 
 		# Set up GUI
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
@@ -258,14 +258,13 @@ if __name__ == '__main__':
 	parser.add_argument("pitch", help="[0] Main pitch, [1] Secondary pitch")
 	parser.add_argument("side", help="The side of our defender ['left', 'right'] allowed.")
 	parser.add_argument("color", help="The color of our team - ['yellow', 'blue'] allowed.")
-	parser.add_argument("our_role", help="The color of our team - ['yellow', 'blue'] allowed.")
 	parser.add_argument(
 		"-n", "--nocomms", help="Disables sending commands to the robot.", action="store_true")
 
 	args = parser.parse_args()
 	if args.nocomms:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role , comms=0).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side, comms=0).wow()
 	else:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side).wow()
