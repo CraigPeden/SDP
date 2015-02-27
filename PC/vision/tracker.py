@@ -206,7 +206,7 @@ class RobotTracker(Tracker):
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
-            cv2.imshow('a', frame)
+
             mask_frame = frame.copy()
 
             # Fill the dummy frame
@@ -253,6 +253,9 @@ class RobotTracker(Tracker):
 
         # Trim the image to only consist of one zone
         frame = frame[self.crop[2]:self.crop[3], self.crop[0]:self.crop[1]]
+
+        cv2.imshow('frame', frame)
+
 
         # (1) Find the plates
         plate_corners = self.get_plate(frame)
