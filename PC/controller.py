@@ -45,7 +45,7 @@ class Controller:
 
 
 		# Set up the Arduino communications
-		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		self.arduino = arduinoComm.Communication("/dev/pts/1", 9600)
 		self.arduino.kick()
 
 		# Set up camera for frames

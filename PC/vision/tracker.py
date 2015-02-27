@@ -201,10 +201,12 @@ class RobotTracker(Tracker):
             x_offset    The offset from the uncropped image - to be added to the final values
             y_offset    The offset from the uncropped image - to be added to the final values
         """
-        
+
+
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
+            cv2.imshow('a', frame)
             mask_frame = frame.copy()
 
             # Fill the dummy frame
@@ -214,26 +216,15 @@ class RobotTracker(Tracker):
             # Mask the original image
             mask_frame = cv2.cvtColor(mask_frame, cv2.COLOR_BGR2GRAY)
             frame = cv2.bitwise_and(frame, frame, mask=mask_frame)
-            
-            frameB = cv2.medianBlur(frame, 5)
 
+            adjustment = self.calibration['dot']
+            contours = self.get_contours(frame, adjustment)
 
-            th3 = cv2.adaptiveThreshold(frameB, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
-                                        cv2.THRESH_BINARY, 11, 2)
-            
-            circles = cv2.HoughCircles(th3, cv2.cv.CV_HOUGH_GRADIENT, 1, 10,
-                                       param1=50, param2=30, minRadius=0, maxRadius=30)
-            
-            return Center(circles[0][0] + x_offset, circles[0][1] + y_offset)
-
-            #adjustment = self.calibration['dot']
-            #contours = self.get_contours(frame, adjustment)
-
-            #if contours and len(contours) > 0:
+            if contours and len(contours) > 0:
                 # Take the largest contour
-             #   contour = self.get_largest_contour(contours)
-              #  (x, y), radius = self.get_contour_centre(contour)
-               # return Center(x + x_offset, y + y_offset)
+                contour = self.get_largest_contour(contours)
+                (x, y), radius = self.get_contour_centre(contour)
+                return Center(x + x_offset, y + y_offset)
 
     def find(self, frame, queue):
         """
@@ -258,6 +249,7 @@ class RobotTracker(Tracker):
         sides = direction = None
         plate_corners = None
         dot = front = None
+        front = rear = None
 
         # Trim the image to only consist of one zone
         frame = frame[self.crop[2]:self.crop[3], self.crop[0]:self.crop[1]]
@@ -342,6 +334,32 @@ class RobotTracker(Tracker):
             if front is not None:
                 front = [(p[1] + self.offset, p[2]) for p in front]
 
+            if rear is not None:
+                rear = [(p[1] + self.offset, p[2]) for p in rear]
+
+                width = self.distance(rear[0], rear[1])
+
+                d1 = self.dist_point_line(front[0], rear[0], dot)
+                d2 = self.dist_point_line(front[1], rear[1], dot)
+
+
+                if d1 < d2:
+                    d = d1
+                    i = 1
+                else:
+                    d = d2
+                    i = -1
+
+                delta = width / 2.0 - d
+                unit_vector = [(rear[0][0] - rear[1][0]) / width, (rear[0][1] - rear[1][1]) / width]
+
+
+
+                # Offset the x coordinates
+                plate_corners = [(p[0] + self.offset + i*unit_vector[0]*delta, p[1] + i*unit_vector[1]*delta) for p in plate_corners]
+
+
+
             queue.put({
                 'x': x + self.offset, 'y': y,
                 'name': self.name,
@@ -363,6 +381,14 @@ class RobotTracker(Tracker):
             'front': None
         })
         return
+
+    def distance(self, P1, P2):
+        return np.sqrt((P1[0] - P2[0]) ** 2 + (P1[1] - P2[1]) ** 2)
+
+    def dist_point_line(self, P1, P2, P):
+        top = np.abs((P2[1] - P1[1]) * P[0] - (P2[0] - P1[0]) * P[1] + P2[0]*P1[1] - P2[1]*P1[0])
+        bottom = self.distance(P1, P2)
+        return top / bottom
 
     def kmeans(self, plate):
 

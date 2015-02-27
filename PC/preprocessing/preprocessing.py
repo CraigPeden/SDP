@@ -2,6 +2,7 @@ import cv2
 
 
 class Preprocessing(object):
+
     def __init__(self, options=None):
         if not options:
             # Which methods to run
@@ -14,15 +15,11 @@ class Preprocessing(object):
         self.background_sub = None
 
     def get_options(self):
-        return self.options
+        return self.options;
 
     def run(self, frame, options):
 
         self.options = options
-
-        frame = cv2.medianBlur(frame, 5)
-
-        frame = cv2.adaptiveThreshold(frame, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
         results = {
             'frame': frame
@@ -36,7 +33,7 @@ class Preprocessing(object):
 
         # Apply background subtraction
         if self.options['background_sub']:
-            frame = cv2.blur(frame, (2, 2))
+            frame = cv2.blur(frame, (2,2))
             # print 'running sub'
             if self.background_sub is not None:
                 bg_mask = self.background_sub.apply(frame)
