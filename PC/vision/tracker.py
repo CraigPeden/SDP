@@ -120,9 +120,16 @@ class Tracker(object):
         """
         cnts = []
         for i, cnt in enumerate(contours):
-            if cv2.contourArea(cnt) > 100:
+            area = cv2.contourArea(cnt)
+
+            if len(cnt) >= 4 and area > 100:
                 cnts.append(cnt)
-        return reduce(lambda x, y: np.concatenate((x, y)), cnts) if len(cnts) else None
+        cnt = reduce(lambda x, y: np.concatenate((x, y)), cnts) if len(cnts) else None
+
+
+
+
+        return cnt
 
     def get_largest_contour(self, contours):
         """
@@ -206,19 +213,43 @@ class RobotTracker(Tracker):
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
+            temp = frame.copy()
+            cv2.cv.SaveImage("test_col.jpg", cv2.cv.fromarray(temp))
 
-            mask_frame = frame.copy()
 
-            # Fill the dummy frame
-            cv2.rectangle(mask_frame, (0, 0), (width, height), (0, 0, 0), -1)
-            cv2.circle(mask_frame, (width / 2, height / 2), 9, (255, 255, 255), -1)
+            gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+            cv2.cv.SaveImage("test_gray.jpg", cv2.cv.fromarray(gray))
 
-            # Mask the original image
-            mask_frame = cv2.cvtColor(mask_frame, cv2.COLOR_BGR2GRAY)
-            frame = cv2.bitwise_and(frame, frame, mask=mask_frame)
+            thresh1 = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv2.THRESH_BINARY_INV,11,2)
 
-            adjustment = self.calibration['dot']
-            contours = self.get_contours(frame, adjustment)
+            cv2.cv.SaveImage("test.jpg", cv2.cv.fromarray(thresh1))
+
+            
+
+            contours, hi = cv2.findContours(thresh1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+            contours = [(c, cv2.contourArea(c)) for c in contours if cv2.contourArea(c) > 30 and cv2.contourArea(c) < 50]
+
+            contours.sort(key=lambda tup: tup[1])
+            contours.reverse()
+
+            #thresh1 = cv2.GaussianBlur(thresh1,(5,5),0)
+
+            #circles = cv2.HoughCircles(thresh1, cv2.cv.CV_HOUGH_GRADIENT, 1, 5,
+            #                param1=5,param2=3,minRadius=0,maxRadius=30)
+            #circles = np.round(circles[0, :]).astype("int")
+            #for (x, y, r) in circles:
+            #    cv2.circle(frame, (x, y), r, (0, 255, 0), 1)
+
+
+
+            if contours and len(contours) > 0:
+                cv2.drawContours(frame, [contours[0][0]], -1, (0,255,0), 1)
+
+                cv2.cv.SaveImage("test_col_cnt.jpg", cv2.cv.fromarray(frame))
+                (x, y), radius = self.get_contour_centre(contours[0][0])
+                return Center(x + x_offset, y + y_offset)
 
             if contours and len(contours) > 0:
                 # Take the largest contour
@@ -337,7 +368,7 @@ class RobotTracker(Tracker):
             if front is not None:
                 front = [(p[1] + self.offset, p[2]) for p in front]
 
-            if rear is not None:
+            if rear is not None and dot is not None:
                 rear = [(p[1] + self.offset, p[2]) for p in rear]
 
                 width = self.distance(rear[0], rear[1])
@@ -359,7 +390,7 @@ class RobotTracker(Tracker):
 
 
                 # Offset the x coordinates
-                plate_corners = [(p[0] + self.offset + i*unit_vector[0]*delta, p[1] + i*unit_vector[1]*delta) for p in plate_corners]
+                #plate_corners = [(p[0] + self.offset + i*unit_vector[0]*delta, p[1] + i*unit_vector[1]*delta) for p in plate_corners]
 
 
 
