@@ -111,9 +111,8 @@ class DefenderIntercept:
 		self.DISTANCE_THRESH = 15
 		self.ANGLE_THRESH = math.pi / 12
 
-		self.our_attacker = world.our_attacker
 		self.ball = world.ball
-		self.zone = world._pitch._zones[self.world.our_attacker.zone]
+		self.zone = world._pitch._zones[self.world.our_defender.zone]
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
 		self.our_defender = world.our_defender
 		self.our_attacker = world.our_attacker
@@ -176,6 +175,10 @@ class DefenderIntercept:
 
 
 
+
+
+
+
 class DefenderPass:
 	def __init__(self, world):
 		self.world = world
@@ -190,6 +193,8 @@ class DefenderPass:
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
 		self.center_x = (min_x + max_x) / 2
 		self.center_y = (min_y + max_y) / 2
+		self.left_point_y = self.center_y + 50
+		self.right_point_y = self.center_y - 50
 		self.goal_x = self.world.their_goal.x
 		self.goal_y = self.world.their_goal.y + self.world.their_goal.height / 2
 
@@ -204,28 +209,32 @@ class DefenderPass:
 
 
 	def pick_action(self):
+		if self.their_attacker.y < self.center_y:
+			y = self.left_point_y
+		else:
+			y = self.right_point_y
 
-		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 		angle_to_teammate = self.our_defender.get_rotation_to_point(self.our_attacker.x, self.our_attacker.y)
 
-		if distance < 45 and angle_to_teammate < math.pi / 12:
+		if distance < 20 and angle_to_teammate < math.pi / 12:
 			self.our_defender.catcher = 'open'
 			return 'kick'
 
-		elif distance < 45 and angle_to_teammate > math.pi / 12:
+		elif distance < 20 and angle_to_teammate > math.pi / 12:
 
 			if angle_to_teammate > 0:
 				return 'turn_left'
 			elif angle_to_teammate < 0:
 				return 'turn_right'
 
-		elif distance > 45 and angle < math.pi / 12:
+		elif distance > 20 and angle < math.pi / 12:
 
 			return 'drive_slow'
-		elif distance > 30 and angle > 11 * math.pi / 12:
+		elif distance > 20 and angle > 11 * math.pi / 12:
 			return 'backwards'
 
-		elif distance > 45 and angle > math.pi / 12:
+		elif distance > 20 and angle > math.pi / 12:
 
 			if angle > 0:
 				return 'turn_left'
