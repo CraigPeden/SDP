@@ -29,9 +29,13 @@ byte LEFT_MOTOR_MASK = 0b00010000;
 /* Timed action */
 boolean kickerAction = false;
 unsigned long kickerTime = millis();
-int kickHold = 330;
-int raiseHold = 220;
-int grabHold = 200;
+boolean retractAction = false;
+unsigned long retractTime = millis();
+boolean grabberAction = false;
+unsigned long grabberTime = millis();
+int grabberDown = 300;
+int grabberUp = 350;
+int kick = 300;
 
 void setup()
 {
@@ -62,26 +66,42 @@ void kickerStop()
     motorStop(2);
 }
 
+void kickerRetract()
+{
+    kickerAction = false;
+    
+    /* Kicker retract */
+    retractTime = millis() + kick;
+    retractAction = true;
+    motorBackward(2,100);
+}
+
+void grabberStop()
+{
+    grabberAction = false;
+    motorStop(3);
+}
+
 void controlKicker(int value)
 {
   if(value == 0)
   {
-    /* Grab */
-    kickerTime = millis() + grabHold;
-    kickerAction = true;
-    motorBackward(2,100);
+    /* Grabber down */
+    grabberTime = millis() + grabberDown;
+    grabberAction = true;
+    motorForward(3,100);
   }
   else if(value == 1)
   {
-    /* Kick */
-    kickerTime = millis() + kickHold;
-    kickerAction = true;
-    motorForward(2,100);
+    /* Grabber up */
+    grabberTime = millis() + grabberUp;
+    grabberAction = true;
+    motorBackward(3,100);
   }
   else if(value == 2)
   {
-    /* Raise */
-    kickerTime = millis() + raiseHold;
+    /* Kicker kick */
+    kickerTime = millis() + kick;
     kickerAction = true;
     motorForward(2,100);
   }
@@ -101,12 +121,12 @@ void controlMotor(int motor, byte msg)
     {
       motorGear = 15 - motorGear;
       int motorSpeed = 100 - ((motorGear * 100) / 7);
-      motorForward(motor, motorSpeed);
+      motorBackward(motor, motorSpeed);
     }
     else    
     {
       int motorSpeed = 100 - ((motorGear * 100) / 7);
-      motorBackward(motor, motorSpeed);
+      motorForward(motor, motorSpeed);
     }
   }
 }
@@ -117,7 +137,21 @@ void loop()
   check if the time is reached. */
   if(kickerAction && (kickerTime < millis()))
   {
+    kickerRetract();
+  }
+  
+  /* If the kicker retract flag retractAction is set,
+  check if the time is reached. */
+  if(retractAction && (retractTime < millis()))
+  {
     kickerStop();
+  }
+  
+  /* If the grabber flag grabberAction is set,
+  check if the time is reached. */
+  if(grabberAction && (grabberTime < millis()))
+  {
+    grabberStop();
   }
 }
 

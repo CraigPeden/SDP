@@ -77,15 +77,14 @@ class Communication(object):
 
         raise Exception("Read timed out")
 
-    def grab(self):
+    def grabberDown(self):
         self.write(self.kicker, 0)
 
-    def kick(self):
+    def grabberUp(self):
         self.write(self.kicker, 1)
 
-    def raiseKicker(self):
+    def kick(self):
         self.write(self.kicker, 2)
-
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:
