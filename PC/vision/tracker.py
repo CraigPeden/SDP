@@ -196,9 +196,53 @@ class RobotTracker(Tracker):
             list of corner points
         """
         # Adjustments are colors and contrast/blur
+        cv2.cv.SaveImage("get_plate.jpg", cv2.cv.fromarray(frame.copy()))
+        temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
+        gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+        cv2.cv.SaveImage("test_gray_plate.jpg", cv2.cv.fromarray(gray))
+
+        thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                                        cv2.THRESH_BINARY_INV, 11, 2)
+
+        cv2.cv.SaveImage("test_plate.jpg", cv2.cv.fromarray(thresh1))
+
+
         adjustments = self.calibration['plate']
         contours = self.get_contours(frame.copy(), adjustments)
         return self.get_contour_corners(self.join_contours(contours))
+
+    def get_blob(self, frame):
+        height, width, channel = frame.shape
+
+
+        if height > 0 and width > 0:
+
+            cv2.cv.SaveImage("test_blob.jpg", cv2.cv.fromarray(frame.copy()))
+           # temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
+           # gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+
+           # gray = cv2.equalizeHist(gray)
+
+           # cv2.cv.SaveImage("test_blob_hist.jpg", cv2.cv.fromarray(gray.copy()))
+
+            #hresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                                            #cv2.THRESH_BINARY, 11, 2)
+
+            #thresh1 = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
+
+            #cv2.cv.SaveImage("test_blob_cnt_thresh.jpg", cv2.cv.fromarray(thresh1.copy()))
+
+           # contours, hi = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            #cnt = self.join_contours(contours)
+            adjustments = self.calibration['yellow']
+            contours = self.get_contours(frame.copy(), adjustments)
+
+            contours = [(c, cv2.contourArea(c)) for c in contours if 20 < cv2.contourArea(c) < 60]
+            contours.sort(key=lambda tup: tup[1], reverse=True)
+            if contours and len(contours):
+
+                cnt = self.get_contour_extremes(contours[0][0])
+                return cnt
 
     def get_dot(self, frame, x_offset, y_offset):
         """
@@ -248,27 +292,17 @@ class RobotTracker(Tracker):
                 contours.append((cnt[0], diffs))
 
             contours.sort(key=lambda tup: tup[1])
-            # contours.reverse()
 
-            #thresh1 = cv2.GaussianBlur(thresh1,(5,5),0)
-
-            #circles = cv2.HoughCircles(thresh1, cv2.cv.CV_HOUGH_GRADIENT, 1, 5,
-            #                param1=5,param2=3,minRadius=0,maxRadius=30)
-            #circles = np.round(circles[0, :]).astype("int")
-            #for (x, y, r) in circles:
-            #    cv2.circle(frame, (x, y), r, (0, 255, 0), 1)
-
-            #print len(contours)
 
             if contours and len(contours) > 0:
                 cv2.drawContours(frame, [contours[0][0]], -1, (0, 255, 0), 1)
 
                 cv2.cv.SaveImage("test_col_cnt.jpg", cv2.cv.fromarray(frame))
                 (x, y), radius = self.get_contour_centre(contours[0][0])
-                return (Center(x + x_offset, y + y_offset), contours[0][1])
+                return (Center(x + x_offset, y + y_offset), contours[0][1], radius)
 
 
-        return (None, None)
+        return (None, None, None)
 
     def find(self, frame, queue):
         """
@@ -298,74 +332,68 @@ class RobotTracker(Tracker):
         # Trim the image to only consist of one zone
         frame = frame[self.crop[2]:self.crop[3], self.crop[0]:self.crop[1]]
         cv2.cv.SaveImage("pitch.jpg", cv2.cv.fromarray(frame.copy()))
-        # dot = self.get_dot(frame.copy(), self.offset, 0)
+        (dot, diff, radius) = self.get_dot(frame.copy(), self.offset, 0)
+
 
 
         # (1) Find the plates
-        plate_corners = self.get_plate(frame)
-
-        if plate_corners is not None:
-            # Find the bounding box
-            plate_bound_box = self.get_bounding_box(plate_corners)
-
-            # set x and y coordinates
-            x = plate_bound_box.x + plate_bound_box.width / 2
-            y = plate_bound_box.y + plate_bound_box.height / 2
-
-            if plate_bound_box.width > 0 and plate_bound_box.height > 0:
-                # (2) Trim to create a smaller frame
-                plate_frame = frame.copy()[
-                              plate_bound_box.y:plate_bound_box.y + plate_bound_box.height,
-                              plate_bound_box.x:plate_bound_box.x + plate_bound_box.width
-                ]
-
-                # (3) Search for the dot
-                (dot, diff) = self.get_dot(plate_frame, plate_bound_box.x + self.offset, plate_bound_box.y)
-
-                if dot is not None:
-                    # Since get_dot adds offset, we need to remove it
-                    dot_temp = Center(dot[0] - self.offset, dot[1])
-
-                    # Find two points from plate_corners that are the furthest from the dot
-
-                    distances = [
-                        (
-                            (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
-                            p[0],  # x coord
-                            p[1]  # y coord
-                        ) for p in plate_corners]
-
-                    distances.sort(key=lambda x: x[0], reverse=True)
-
-                    # Front of the kicker should be the first two points in distances
-                    front = distances[:2]
-                    rear = distances[2:]
-
-                    # Calculate which of the rear points belongs to the first of the front
-                    first = front[0]
-                    front_rear_distances = [
-                        (
-                            (first[1] - p[0]) ** 2 + (first[2] - p[1]) ** 2,
-                            p[1],
-                            p[2]
-                        ) for p in rear]
-                    front_rear_distances.sort(key=lambda x: x[0])
 
 
-                    # Direction is a line between the front points and rear points
-                    direction = (
-                        Center(
-                            (first[1] + front[1][1]) / 2 + self.offset,
-                            (front[1][2] + first[2]) / 2),
-                        Center(
-                            (front_rear_distances[1][1] + front_rear_distances[0][1]) / 2 + self.offset,
-                            (front_rear_distances[1][2] + front_rear_distances[0][2]) / 2)
-                    )
+        if dot is not None:
 
-                    angle = self.get_angle(direction[1], direction[0])
+            size = 24
+            plate_frame = frame.copy()[
+                                int(dot.y)-size:int(dot.y) + size,
+                                int(dot.x)-size:int(dot.x) + size
+                                ]
+            self.get_blob(plate_frame)
+            # Since get_dot adds offset, we need to remove it
+            dot_temp = Center(dot[0] - self.offset, dot[1])
+
+            plate_corners = [(int(dot.x)-size/2, int(dot.y)+size/2), (int(dot.x)-size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)+size/2)]
+
+            # Find two points from plate_corners that are the furthest from the dot
+
+            distances = [
+                (
+                    (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
+                    p[0],  # x coord
+                    p[1]  # y coord
+                ) for p in plate_corners]
+
+            distances.sort(key=lambda x: x[0], reverse=True)
+
+            # Front of the kicker should be the first two points in distances
+            front = distances[:2]
+            rear = distances[2:]
+
+            # Calculate which of the rear points belongs to the first of the front
+            first = front[0]
+            front_rear_distances = [
+                (
+                    (first[1] - p[0]) ** 2 + (first[2] - p[1]) ** 2,
+                    p[1],
+                    p[2]
+                ) for p in rear]
+            front_rear_distances.sort(key=lambda x: x[0])
+
+
+            # Direction is a line between the front points and rear points
+            direction = (
+                Center(
+                    (first[1] + front[1][1]) / 2 + self.offset,
+                    (front[1][2] + first[2]) / 2),
+                Center(
+                    (front_rear_distances[1][1] + front_rear_distances[0][1]) / 2 + self.offset,
+                    (front_rear_distances[1][2] + front_rear_distances[0][2]) / 2)
+            )
+
+            angle = self.get_angle(direction[1], direction[0])
 
             # Offset the x coordinates
-            #plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
+
+
+
 
             if front is not None:
                 front = [(p[1] + self.offset, p[2]) for p in front]
@@ -396,7 +424,7 @@ class RobotTracker(Tracker):
                 print 'Offset', offset_1
 
                 # Offset the x coordinates
-                plate_corners = [(p[0]+offset_1+self.offset, p[1]+offset_2) for p in plate_corners]
+                plate_corners = [(p[0]+offset_1, p[1]+offset_2) for p in plate_corners]
 
             # Since get_dot adds offset, we need to remove it
                 dot_temp = Center(dot[0] - self.offset, dot[1])
@@ -444,8 +472,8 @@ class RobotTracker(Tracker):
                 plate_corners = self.data['box']
 
             self.data = {
-                'x': x + self.offset,
-                'y': y,
+                'x': None,
+                'y': None,
                 'name': self.name,
                 'angle': angle,
                 'dot': dot,
