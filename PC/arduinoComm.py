@@ -84,7 +84,22 @@ class Communication(object):
         self.write(self.kicker, 1)
 
     def kick(self):
+        """
+            The kicker kicks and retracts the kicker by itself.
+        """
         self.write(self.kicker, 2)
+
+    def kickerKick(self):
+        """
+            The kicker simply kicks.
+        """
+        self.write(self.kicker, 3)
+
+    def kickerRetract(self):
+        """
+            The kicker simply retracts.
+        """
+        self.write(self.kicker, 4)
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:

@@ -27,15 +27,15 @@ byte RIGHT_MOTOR_MASK = 0b00100000;
 byte LEFT_MOTOR_MASK = 0b00010000;
 
 /* Timed action */
-boolean kickerAction = false;
 unsigned long kickerTime = millis();
-boolean retractAction = false;
-unsigned long retractTime = millis();
+int kickerState = 0;
 boolean grabberAction = false;
 unsigned long grabberTime = millis();
 int grabberDown = 300;
-int grabberUp = 350;
-int kick = 300;
+int grabberUp = 400;
+int kickerKick = 150;
+int kickerRetract = 150;
+int kickerSleep = 100;
 
 void setup()
 {
@@ -60,28 +60,6 @@ int countSetBits(int n)
   return count;
 }
 
-void kickerStop()
-{
-    retractAction = false;
-    motorStop(2);
-}
-
-void kickerRetract()
-{
-    kickerAction = false;
-    
-    /* Kicker retract */
-    retractTime = millis() + kick;
-    retractAction = true;
-    motorBackward(2,100);
-}
-
-void grabberStop()
-{
-    grabberAction = false;
-    motorStop(3);
-}
-
 void controlKicker(int value)
 {
   if(value == 0)
@@ -100,10 +78,24 @@ void controlKicker(int value)
   }
   else if(value == 2)
   {
-    /* Kicker kick */
-    kickerTime = millis() + kick;
-    kickerAction = true;
+    /* Kicker routine */
+    kickerTime = millis() + kickerKick;
+    kickerState = 1; //kicker is kicking
     motorForward(2,100);
+  }
+  else if(value == 3)
+  {
+    /* Kicker simple kick */
+    kickerTime = millis() + kickerKick;
+    kickerState = 3;
+    motorForward(2,100);
+  }
+  else if(value == 4)
+  {
+    /* Kicker simple kick */
+    kickerTime = millis() + kickerRetract;
+    kickerState = 3;
+    motorBackward(2,100);
   }
 }
 
@@ -135,23 +127,36 @@ void loop()
 {
   /* If the kicker flag kickerAction is set,
   check if the time is reached. */
-  if(kickerAction && (kickerTime < millis()))
+  if(kickerState != 0 && (kickerTime < millis()))
   {
-    kickerRetract();
-  }
-  
-  /* If the kicker retract flag retractAction is set,
-  check if the time is reached. */
-  if(retractAction && (retractTime < millis()))
-  {
-    kickerStop();
+    if (kickerState == 1)
+    {
+      // Transition from kick to sleep
+      kickerTime = millis() + kickerSleep;
+      kickerState = 2;
+      motorStop(2);      
+    }
+    else if (kickerState == 2)
+    {
+      // Transition from sleep to retract
+      kickerTime = millis() + kickerRetract;
+      kickerState = 3;
+      motorBackward(2, 100);   
+    }
+    else if (kickerState == 3)
+    {
+      // Transition from retract to stop
+      kickerState = 0;
+      motorStop(2);
+    }
   }
   
   /* If the grabber flag grabberAction is set,
   check if the time is reached. */
   if(grabberAction && (grabberTime < millis()))
   {
-    grabberStop();
+    grabberAction = false;
+    motorStop(3);
   }
 }
 
@@ -168,17 +173,14 @@ void serialEvent() {
       
       if((msg & KICKER_MASK) == KICKER_MASK)
       {
-        // Serial.println("KICKER");
         controlKicker(getArg(msg));
       }
       else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
-      {        
-        //Serial.println("MOTOR");
+      {
         controlMotor(0, msg);
       }
       else if((msg & LEFT_MOTOR_MASK) == LEFT_MOTOR_MASK)
       {
-        //Serial.println("LED");
         controlMotor(1, msg);
       }
     }
