@@ -10,13 +10,11 @@ KMEANS = False
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter('ignore', RuntimeWarning)
 
-
 BoundingBox = namedtuple('BoundingBox', 'x y width height')
 Center = namedtuple('Center', 'x y')
 
 
 class Tracker(object):
-
     def get_contours(self, frame, adjustments):
         """
         Adjust the given frame based on 'min', 'max', 'contrast' and 'blur'
@@ -126,9 +124,6 @@ class Tracker(object):
                 cnts.append(cnt)
         cnt = reduce(lambda x, y: np.concatenate((x, y)), cnts) if len(cnts) else None
 
-
-
-
         return cnt
 
     def get_largest_contour(self, contours):
@@ -157,7 +152,6 @@ class Tracker(object):
 
 
 class RobotTracker(Tracker):
-
     def __init__(self, color, crop, offset, pitch, name, calibration):
         """
         Initialize tracker.
@@ -179,10 +173,13 @@ class RobotTracker(Tracker):
             'name': self.name,
             'angle': None,
             'dot': None,
+            'dot_diff': 10000.0,
             'box': None,
             'direction': None,
             'front': None
         }
+
+
 
         self.color = [calibration[color]]
 
@@ -223,37 +220,35 @@ class RobotTracker(Tracker):
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
-            temp = cv2.GaussianBlur(frame.copy(),(5,5),0)
+            temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
             cv2.cv.SaveImage("test_col.jpg", cv2.cv.fromarray(temp))
-
 
             gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
             cv2.cv.SaveImage("test_gray.jpg", cv2.cv.fromarray(gray))
 
-            thresh1 = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-            cv2.THRESH_BINARY_INV,11,2)
+            thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                                            cv2.THRESH_BINARY_INV, 11, 2)
 
             cv2.cv.SaveImage("test.jpg", cv2.cv.fromarray(thresh1))
 
-            
+            contours, hi = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-            contours, hi = cv2.findContours(thresh1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-
-            contours_temp = [(c, cv2.contourArea(c)) for c in contours if 30 < cv2.contourArea(c) < 50 ]
+            contours_temp = [(c, cv2.contourArea(c)) for c in contours if 20 < cv2.contourArea(c) < 60]
 
             contours = []
 
             for cnt in contours_temp:
                 (x, y), radius = cv2.minEnclosingCircle(cnt[0])
                 diffs = 0
-
+                lengths = []
+                total = 0
                 for c in cnt[0]:
-                    diffs += np.abs(radius - self.distance(c[0], (x,y)))
+                    diffs += (radius - self.distance(c[0], (x, y)))**2
 
                 contours.append((cnt[0], diffs))
 
             contours.sort(key=lambda tup: tup[1])
-            #contours.reverse()
+            # contours.reverse()
 
             #thresh1 = cv2.GaussianBlur(thresh1,(5,5),0)
 
@@ -266,17 +261,14 @@ class RobotTracker(Tracker):
             #print len(contours)
 
             if contours and len(contours) > 0:
-                cv2.drawContours(frame, [contours[0][0]], -1, (0,255,0), 1)
+                cv2.drawContours(frame, [contours[0][0]], -1, (0, 255, 0), 1)
 
                 cv2.cv.SaveImage("test_col_cnt.jpg", cv2.cv.fromarray(frame))
                 (x, y), radius = self.get_contour_centre(contours[0][0])
-                return Center(x + x_offset, y + y_offset)
+                return (Center(x + x_offset, y + y_offset), contours[0][1])
 
-            #if contours and len(contours) > 0:
-                # Take the largest contour
-                #contour = self.get_largest_contour(contours)
-                #(x, y), radius = self.get_contour_centre(contour)
-                #return Center(x + x_offset, y + y_offset)
+
+        return (None, None)
 
     def find(self, frame, queue):
         """
@@ -306,7 +298,7 @@ class RobotTracker(Tracker):
         # Trim the image to only consist of one zone
         frame = frame[self.crop[2]:self.crop[3], self.crop[0]:self.crop[1]]
         cv2.cv.SaveImage("pitch.jpg", cv2.cv.fromarray(frame.copy()))
-        #dot = self.get_dot(frame.copy(), self.offset, 0)
+        # dot = self.get_dot(frame.copy(), self.offset, 0)
 
 
         # (1) Find the plates
@@ -323,12 +315,12 @@ class RobotTracker(Tracker):
             if plate_bound_box.width > 0 and plate_bound_box.height > 0:
                 # (2) Trim to create a smaller frame
                 plate_frame = frame.copy()[
-                    plate_bound_box.y:plate_bound_box.y + plate_bound_box.height,
-                    plate_bound_box.x:plate_bound_box.x + plate_bound_box.width
+                              plate_bound_box.y:plate_bound_box.y + plate_bound_box.height,
+                              plate_bound_box.x:plate_bound_box.x + plate_bound_box.width
                 ]
 
                 # (3) Search for the dot
-                dot = self.get_dot(plate_frame, plate_bound_box.x + self.offset, plate_bound_box.y)
+                (dot, diff) = self.get_dot(plate_frame, plate_bound_box.x + self.offset, plate_bound_box.y)
 
                 if dot is not None:
                     # Since get_dot adds offset, we need to remove it
@@ -338,9 +330,9 @@ class RobotTracker(Tracker):
 
                     distances = [
                         (
-                            (dot_temp.x - p[0])**2 + (dot_temp.y - p[1])**2,  # distance
-                            p[0],                                   # x coord
-                            p[1]                                    # y coord
+                            (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
+                            p[0],  # x coord
+                            p[1]  # y coord
                         ) for p in plate_corners]
 
                     distances.sort(key=lambda x: x[0], reverse=True)
@@ -353,23 +345,12 @@ class RobotTracker(Tracker):
                     first = front[0]
                     front_rear_distances = [
                         (
-                            (first[1] - p[0])**2 + (first[2] - p[1])**2,
+                            (first[1] - p[0]) ** 2 + (first[2] - p[1]) ** 2,
                             p[1],
                             p[2]
                         ) for p in rear]
                     front_rear_distances.sort(key=lambda x: x[0])
 
-                    # Put the results together
-                    sides = [
-                        (
-                            Center(first[1], first[2]),
-                            Center(front_rear_distances[0][1], front_rear_distances[0][2])
-                        ),
-                        (
-                            Center(front[1][1], front[1][2]),
-                            Center(front_rear_distances[1][1], front_rear_distances[1][2])
-                        )
-                    ]
 
                     # Direction is a line between the front points and rear points
                     direction = (
@@ -384,7 +365,7 @@ class RobotTracker(Tracker):
                     angle = self.get_angle(direction[1], direction[0])
 
             # Offset the x coordinates
-            plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
+            #plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
 
             if front is not None:
                 front = [(p[1] + self.offset, p[2]) for p in front]
@@ -397,7 +378,6 @@ class RobotTracker(Tracker):
                 d1 = self.dist_point_line(front[0], rear[0], dot)
                 d2 = self.dist_point_line(front[1], rear[1], dot)
 
-
                 if d1 < d2:
                     d = d1
                     i = 1
@@ -406,12 +386,41 @@ class RobotTracker(Tracker):
                     i = -1
 
                 delta = width / 2.0 - d
+                print 'Delta', delta
+                print 'Width', width
                 unit_vector = [(rear[0][0] - rear[1][0]) / width, (rear[0][1] - rear[1][1]) / width]
 
+                offset_1 = int(np.ceil(i * unit_vector[0] * delta))
+                offset_2 = int(np.ceil(i * unit_vector[1] * delta))
 
+                print 'Offset', offset_1
 
                 # Offset the x coordinates
-                #plate_corners = [(p[0] + self.offset + i*unit_vector[0]*delta, p[1] + i*unit_vector[1]*delta) for p in plate_corners]
+                plate_corners = [(p[0]+offset_1+self.offset, p[1]+offset_2) for p in plate_corners]
+
+            # Since get_dot adds offset, we need to remove it
+                dot_temp = Center(dot[0] - self.offset, dot[1])
+
+                # Find two points from plate_corners that are the furthest from the dot
+
+                distances = [
+                    (
+                        (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
+                        p[0],  # x coord
+                        p[1]  # y coord
+                    ) for p in plate_corners]
+
+                distances.sort(key=lambda x: x[0], reverse=True)
+
+                # Front of the kicker should be the first two points in distances
+                front = distances[:2]
+                if front is not None:
+                    front = [(p[1] + self.offset, p[2]) for p in front]
+
+
+            elif self.data['box'] is None:
+                plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
+
 
             if dot is None:
                 dot = self.data['dot']
@@ -435,16 +444,16 @@ class RobotTracker(Tracker):
                 plate_corners = self.data['box']
 
             self.data = {
-                'x': x + self.offset, 'y': y,
+                'x': x + self.offset,
+                'y': y,
                 'name': self.name,
                 'angle': angle,
                 'dot': dot,
                 'box': plate_corners,
-                'direction': direction,
-                'front': front
+                'direction': None,
+                'front': None,
+                'dot_diff': diff
             }
-
-
 
             queue.put(self.data)
             return
@@ -457,13 +466,13 @@ class RobotTracker(Tracker):
         return np.sqrt((P1[0] - P2[0]) ** 2 + (P1[1] - P2[1]) ** 2)
 
     def dist_point_line(self, P1, P2, P):
-        top = np.abs((P2[1] - P1[1]) * P[0] - (P2[0] - P1[0]) * P[1] + P2[0]*P1[1] - P2[1]*P1[0])
+        top = np.abs((P2[1] - P1[1]) * P[0] - (P2[0] - P1[0]) * P[1] + P2[0] * P1[1] - P2[1] * P1[0])
         bottom = self.distance(P1, P2)
         return top / bottom
 
     def kmeans(self, plate):
 
-        prep = plate.reshape((-1,3))
+        prep = plate.reshape((-1, 3))
         prep = np.float32(prep)
 
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
@@ -476,7 +485,7 @@ class RobotTracker(Tracker):
         res2 = res.reshape((plate.shape))
 
         # if self.name == 'Their Defender':
-        #     colour_centers = np.array([colour_centers])
+        # colour_centers = np.array([colour_centers])
         #     print "********************", self.name
         #     print colour_centers
         #     print 'HSV######'
@@ -502,7 +511,7 @@ class BallTracker(Tracker):
         """
         self.crop = crop
         # if pitch == 0:
-        #     self.color = PITCH0['red']
+        # self.color = PITCH0['red']
         # else:
         #     self.color = PITCH1['red']
         self.color = [calibration['red']]
