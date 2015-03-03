@@ -174,6 +174,16 @@ class RobotTracker(Tracker):
         self.name = name
         self.crop = crop
 
+        self.data = {
+            'x': None, 'y': None,
+            'name': self.name,
+            'angle': None,
+            'dot': None,
+            'box': None,
+            'direction': None,
+            'front': None
+        }
+
         self.color = [calibration[color]]
 
         self.color_name = color
@@ -213,7 +223,7 @@ class RobotTracker(Tracker):
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
-            temp = cv2.blur(frame.copy(),(5,5))
+            temp = cv2.GaussianBlur(frame.copy(),(5,5),0)
             cv2.cv.SaveImage("test_col.jpg", cv2.cv.fromarray(temp))
 
 
@@ -229,10 +239,21 @@ class RobotTracker(Tracker):
 
             contours, hi = cv2.findContours(thresh1,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-            contours = [(c, cv2.contourArea(c)) for c in contours if cv2.contourArea(c) > 30 and cv2.contourArea(c) < 50]
+            contours_temp = [(c, cv2.contourArea(c)) for c in contours if 30 < cv2.contourArea(c) < 50 ]
+
+            contours = []
+
+            for cnt in contours_temp:
+                (x, y), radius = cv2.minEnclosingCircle(cnt[0])
+                diffs = 0
+
+                for c in cnt[0]:
+                    diffs += np.abs(radius - self.distance(c[0], (x,y)))
+
+                contours.append((cnt[0], diffs))
 
             contours.sort(key=lambda tup: tup[1])
-            contours.reverse()
+            #contours.reverse()
 
             #thresh1 = cv2.GaussianBlur(thresh1,(5,5),0)
 
@@ -242,7 +263,7 @@ class RobotTracker(Tracker):
             #for (x, y, r) in circles:
             #    cv2.circle(frame, (x, y), r, (0, 255, 0), 1)
 
-
+            #print len(contours)
 
             if contours and len(contours) > 0:
                 cv2.drawContours(frame, [contours[0][0]], -1, (0,255,0), 1)
@@ -251,11 +272,11 @@ class RobotTracker(Tracker):
                 (x, y), radius = self.get_contour_centre(contours[0][0])
                 return Center(x + x_offset, y + y_offset)
 
-            if contours and len(contours) > 0:
+            #if contours and len(contours) > 0:
                 # Take the largest contour
-                contour = self.get_largest_contour(contours)
-                (x, y), radius = self.get_contour_centre(contour)
-                return Center(x + x_offset, y + y_offset)
+                #contour = self.get_largest_contour(contours)
+                #(x, y), radius = self.get_contour_centre(contour)
+                #return Center(x + x_offset, y + y_offset)
 
     def find(self, frame, queue):
         """
@@ -392,9 +413,28 @@ class RobotTracker(Tracker):
                 # Offset the x coordinates
                 #plate_corners = [(p[0] + self.offset + i*unit_vector[0]*delta, p[1] + i*unit_vector[1]*delta) for p in plate_corners]
 
+            if dot is None:
+                dot = self.data['dot']
 
+            if direction is None:
+                direction = self.data['direction']
 
-            queue.put({
+            if front is None:
+                front = self.data['front']
+
+            if angle is None:
+                angle = self.data['angle']
+
+            if x is None:
+                x = self.data['x']
+
+            if y is None:
+                y = self.data['y']
+
+            if plate_corners is None:
+                plate_corners = self.data['box']
+
+            self.data = {
                 'x': x + self.offset, 'y': y,
                 'name': self.name,
                 'angle': angle,
@@ -402,19 +442,15 @@ class RobotTracker(Tracker):
                 'box': plate_corners,
                 'direction': direction,
                 'front': front
-            })
+            }
+
+
+
+            queue.put(self.data)
             return
 
-        queue.put({
-            'x': None, 'y': None,
-            'name': self.name,
-            'angle': None,
-            'dot': None,
-            'box': None,
-            'direction': None,
-            'front': None
-        })
-        print 'NONE'
+        queue.put(self.data)
+
         return
 
     def distance(self, P1, P2):

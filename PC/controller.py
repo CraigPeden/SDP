@@ -183,12 +183,12 @@ class Attacker_Controller(Robot_Controller):
 
 		if action == 'grab':
 
-			comm.grab()
+			comm.grabberDown()
 			time.sleep(0.5)
 
 		elif action == 'open_catcher':
 			   
-			comm.raiseKicker()
+			comm.grabberUp()
 	
 		elif action == 'kick':
 
