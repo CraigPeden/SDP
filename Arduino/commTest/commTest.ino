@@ -62,7 +62,7 @@ int countSetBits(int n)
 
 void kickerStop()
 {
-    kickerAction = false;
+    retractAction = false;
     motorStop(2);
 }
 
