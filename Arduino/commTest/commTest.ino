@@ -33,8 +33,8 @@ boolean grabberAction = false;
 unsigned long grabberTime = millis();
 int grabberDown = 300;
 int grabberUp = 400;
-int kickerKick = 150;
-int kickerRetract = 150;
+int kickerKick = 200;
+int kickerRetract = 200;
 int kickerSleep = 100;
 
 void setup()
