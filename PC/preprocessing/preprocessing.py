@@ -18,7 +18,7 @@ class Preprocessing(object):
 	def get_options(self):
 		return self.options;
 
-	def run(self, frame, options):
+	def run(self, frame, pitch, options):
 
 		self.options = options
 
@@ -29,7 +29,7 @@ class Preprocessing(object):
 		# Apply normalization
 		if self.options['normalize']:
 			# Normalize only the saturation channel
-			results['frame'] = self.normalize(frame)
+			results['frame'] = self.normalize(frame, pitch)
 			# print 'Normalizing frame'
 
 		# Apply background subtraction
@@ -45,7 +45,9 @@ class Preprocessing(object):
 
 		return results
 
-	def normalize(self, frame, width, height, pitch=0):
+	def normalize(self, frame, pitch=0):
+		width = frame.shape[1]
+		height = frame.shape[0]
 		zones = tools.get_zones(width, height, pitch=pitch)
 		mids = [((zones[i][0] + zones[i][1]) / 2) for i in range(0, 4)]
 		s_low = [frame[3*height/4, x_co] for x_co in mids]
@@ -56,8 +58,5 @@ class Preprocessing(object):
 			for j in range(0,3):
 				frame[0:height/2, zones[i][0]:zones[i][1] ] += (s_high[i] - avg)
 				frame[height/2:height, zones[i][0]:zones[i][1] ] += (s_low[i] - avg)
-		print avg
 
-
-
-		return None
+		return frame

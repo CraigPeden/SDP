@@ -91,9 +91,9 @@ class Controller:
 
 				frame = self.camera.get_frame()
 				pre_options = self.preprocessing.options
-				self.preprocessing.normalize(frame, frame.shape[1], frame.shape[0], self.pitch)
+				#preprocessed = self.preprocessing.normalize(frame, self.pitch)
 				# Apply preprocessing methods toggled in the UI
-				preprocessed = self.preprocessing.run(frame, pre_options)
+				preprocessed = self.preprocessing.run(frame, self.pitch,  pre_options)
 				frame = preprocessed['frame']
 				if 'background_sub' in preprocessed:
 					cv2.imshow('bg sub', preprocessed['background_sub'])
