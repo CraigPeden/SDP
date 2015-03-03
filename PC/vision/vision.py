@@ -3,7 +3,6 @@ from collections import namedtuple
 
 import cv2
 import numpy as np
-
 import tools
 from tracker import BallTracker, RobotTracker
 from colors import BGR_COMMON
@@ -85,6 +84,9 @@ class Vision:
         # Set up trackers
         self.ball_tracker = BallTracker(
             (0, width, 0, height), 0, pitch, calibration)
+
+
+
 
     def _get_zones(self, width, height):
         return [(val[0], val[1], 0, height) for val in tools.get_zones(width, height, pitch=self.pitch)]

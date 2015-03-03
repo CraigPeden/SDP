@@ -12,6 +12,7 @@ import arduinoComm
 
 
 
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
@@ -77,6 +78,7 @@ class Controller:
 		self.controller = Attacker_Controller()
 
 
+
 	def wow(self):
 		"""
 		Ready your sword, here be dragons.
@@ -89,6 +91,7 @@ class Controller:
 
 				frame = self.camera.get_frame()
 				pre_options = self.preprocessing.options
+				self.preprocessing.normalize(frame, frame.shape[1], frame.shape[0], self.pitch)
 				# Apply preprocessing methods toggled in the UI
 				preprocessed = self.preprocessing.run(frame, pre_options)
 				frame = preprocessed['frame']
@@ -105,7 +108,8 @@ class Controller:
 				
 				robot_action = self.planner.plan()
 
-				
+
+
 
 				if self.controller is not None:
 					self.controller.execute(self.arduino, robot_action)
