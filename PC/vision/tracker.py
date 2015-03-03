@@ -213,7 +213,7 @@ class RobotTracker(Tracker):
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
-            temp = frame.copy()
+            temp = cv2.blur(frame.copy(),(5,5))
             cv2.cv.SaveImage("test_col.jpg", cv2.cv.fromarray(temp))
 
 
@@ -284,8 +284,8 @@ class RobotTracker(Tracker):
 
         # Trim the image to only consist of one zone
         frame = frame[self.crop[2]:self.crop[3], self.crop[0]:self.crop[1]]
-
-        cv2.imshow('frame', frame)
+        cv2.cv.SaveImage("pitch.jpg", cv2.cv.fromarray(frame.copy()))
+        #dot = self.get_dot(frame.copy(), self.offset, 0)
 
 
         # (1) Find the plates
@@ -414,6 +414,7 @@ class RobotTracker(Tracker):
             'direction': None,
             'front': None
         })
+        print 'NONE'
         return
 
     def distance(self, P1, P2):
