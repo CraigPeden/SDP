@@ -17,8 +17,9 @@ stdscr.addstr(2,0,"DOWN       : go backwards")
 stdscr.addstr(3,0,"LEFT       : steer left")
 stdscr.addstr(4,0,"RIGHT      : steer right")
 stdscr.addstr(5,0,"SPACE      : stop")
-stdscr.addstr(6,0,"X          : grab")
-stdscr.addstr(7,0,"C          : kick")
+stdscr.addstr(6,0,"X          : grabberDown")
+stdscr.addstr(7,0,"C          : grabberUp")
+stdscr.addstr(8,0,"V          : kickerKick")
 stdscr.addstr(10,9,"         ")
 stdscr.refresh()
 
@@ -48,17 +49,17 @@ while key != ord('q') and key != ord('Q'):
         comms.drive(0,0)
 
     if key == ord('x'):
-        stdscr.addstr(10, 9, "GRAB     ")
-        comms.grab()
+        stdscr.addstr(10, 9, "GRAB DOWN")
+        comms.grabberDown()
 
     if key == ord('c'):
-        stdscr.addstr(10, 9, "KICK     ")
-        comms.kick()
+        stdscr.addstr(10, 9, "GRAB UP  ")
+        comms.grabberUp()
 
     if key == ord('v'):
         stdscr.addstr(10, 9, "KICK     ")
-        comms.raiseKicker()
-
+        comms.kick()
+        
     stdscr.refresh()
 
 curses.endwin()
