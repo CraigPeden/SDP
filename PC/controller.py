@@ -45,7 +45,8 @@ class Controller:
 
 
 		# Set up the Arduino communications
-		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600) 
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		#self.arduino.grabberUp()
 		
 
 		# Set up camera for frames
@@ -72,9 +73,15 @@ class Controller:
 		self.color = color
 		self.side = our_side
 
+		self.timeOfNextAction = 0
+
 		self.preprocessing = Preprocessing()
 	#it doesn't matter whether it is an Attacker or a Defender Controller
-		self.controller = Attacker_Controller()
+		self.controller = Attacker_Controller(self.planner._world)
+
+		self.robot_action_list = []
+
+
 
 
 	def wow(self):
@@ -103,12 +110,17 @@ class Controller:
 				# Find appropriate action
 				self.planner.update_world(model_positions)
 				
-				robot_action = self.planner.plan()
+				if time.time() >= self.timeOfNextAction:
+					if self.robot_action_list == []:
+						plan = self.planner.plan()
 
+						if isinstance(plan, list):
+							self.robot_action_list = plan
+						else:
+							self.robot_action_list = [(plan, 0)]
 				
-
-				if self.controller is not None:
-					self.controller.execute(self.arduino, robot_action)
+					if self.controller is not None:
+						self.controller.execute(self.arduino, self)
 	   
 
 				# Information about the grabbers from the world
@@ -129,7 +141,7 @@ class Controller:
 
 				self.GUI.draw(
 					frame, model_positions, actions, regular_positions, fps, robotState,
-				   "we dont need it", robot_action, "we dont need it", grabbers,
+				   "we dont need it", '', "we dont need it", grabbers,
 					our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
 				counter += 1
 
@@ -150,12 +162,12 @@ class Robot_Controller(object):
 	Robot_Controller superclass for robot control.
 	"""
 
-	def __init__(self):
+	def __init__(self, world):
 		"""
 		Connect to Brick and setup Motors/Sensors.
 		"""
 		self.current_speed = 0
-
+		self.world = world
 	def shutdown(self, comm):
 		# TO DO
 			pass
@@ -168,17 +180,25 @@ class Attacker_Controller(Robot_Controller):
 	Attacker implementation.
 	"""
 
-	def __init__(self):
+	def __init__(self, world):
 		"""
 		Do the same setup as the Robot class, as well as anything specific to the Attacker.
 		"""
-		super(Attacker_Controller, self).__init__()
-		self.last_kicker_action = time.time()
+		super(Attacker_Controller, self).__init__(world)
+		
 
-	def execute(self, comm, action):
+	def execute(self, comm, controller):
 		"""
 		Execute robot action.
 		"""
+		action = controller.robot_action_list[0][0]
+
+		slow_speed = 3
+		turn_speed = 4
+		turn_speed_slow = 4
+		turn_speed_aiming = 3
+		fast_speed = 5
+
 		if action != None:
 			print action    
 
@@ -186,62 +206,68 @@ class Attacker_Controller(Robot_Controller):
 
 			comm.stop()
 			comm.grabberDown()
-			time.sleep(0.2)
 
 		elif action == 'open_catcher':
 			comm.stop()   
 			comm.grabberUp()
-
 	
 		elif action == 'kick':
 
 			comm.stop()
 			comm.kick()
-			time.sleep(0.2)
 
 		elif action == 'turn_left':
 
 		  
-			comm.drive(-4, 4)
+			comm.drive(-turn_speed, turn_speed)
 
 		elif action == 'turn_right':
 		  
-			comm.drive(4, -4)
+			comm.drive(turn_speed, -turn_speed)
 
 		elif action == 'turn_left_slow':
 
 		  
-			comm.drive(-3, 3)
+			comm.drive(-turn_speed_slow, turn_speed_slow)
 
 		elif action == 'turn_right_slow':
 		  
-			comm.drive(3, -3)
+			comm.drive(turn_speed_slow, -turn_speed_slow)
+
+		elif action == 'turn_left_aiming':
+
+		  
+			comm.drive(-turn_speed_aiming, turn_speed_aiming)
+
+		elif action == 'turn_right_aiming':
+		  
+			comm.drive(turn_speed_aiming, -turn_speed_aiming)
 
 		elif action == 'backwards':
 		  
-			comm.drive(-4, -4)
+			comm.drive(-slow_speed, -slow_speed)
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-7, -7)	
+			comm.drive(-fast_speed, -fast_speed)	
 
 		elif action == 'drive':
 		  
-			comm.drive(4, 4)
+			comm.drive(fast_speed, fast_speed)
 		elif action == 'drive_intercept':
 		  
-			comm.drive(7, 7)	
+			comm.drive(fast_speed, fast_speed)	
 		elif action == 'drive_slow':
 		  
-			comm.drive(3, 3)
-
-		elif action == 'backwards':
-			comm.drive(-4, 4)
+			comm.drive(slow_speed, slow_speed)
 
 		elif action == 'stop':
 		  
 			comm.drive(0, 0)
 		else:
 			comm.stop()
+
+		controller.timeOfNextAction = time.time() + controller.robot_action_list[0][1]
+		del controller.robot_action_list[0]
 		
 			
 			
@@ -249,6 +275,7 @@ class Attacker_Controller(Robot_Controller):
 
 	def shutdown(self, comm):
 		comm.drive(0, 0)
+
 
 
 

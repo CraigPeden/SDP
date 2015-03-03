@@ -222,10 +222,6 @@ class Robot(PitchObject):
         '''
         Gets if the robot has possession of the ball
         '''
-        print "Catcher:"
-        print self._catcher == 'closed'
-        print "Can catch ball"
-        print self.can_catch_ball(ball)
         return (self._catcher == 'closed') and self.can_catch_ball(ball)
 
     def get_rotation_to_point(self, x, y):

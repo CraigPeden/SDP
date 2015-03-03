@@ -16,16 +16,18 @@ class DefenderGrab:
 	def pick_action(self):
 
 		distance, angle = self.our_defender.get_direction_to_point(self.ball.x, self.ball.y)
+		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Catcher closed:' + self.our_defender.catcher
 
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
 
 			self.our_defender.catcher = 'closed'
 			return 'grab'
 
-		if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
+		#if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
 
-			self.our_defender.catcher = 'open'
-			return 'open_catcher'
+		#	self.our_defender.catcher = 'open'
+		#	return 'open_catcher'
 
 		elif not (distance is None):
 
@@ -33,16 +35,16 @@ class DefenderGrab:
 			if abs(angle) > math.pi / 9:
 				if abs(angle) > math.pi / 4:
 					if angle > 0:
-						return 'turn_left'
+						return 'turn_left_slow'
 					elif angle < 0:
-						return 'turn_right'
+						return 'turn_right_slow'
 				else:
 					if angle > 0:
 						return 'turn_left_slow'
 					elif angle < 0:
 						return 'turn_right_slow'
 
-			elif distance > 90:
+			elif distance > 120:
 				return 'drive'
 
 			else:
@@ -114,6 +116,7 @@ class DefenderIntercept:
 		self.ball = world.ball
 		self.zone = world._pitch._zones[self.world.our_defender.zone]
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
+		self.center_x = (min_x + max_x) / 2
 		self.our_defender = world.our_defender
 		self.our_attacker = world.our_attacker
 		self.their_defender = world.their_defender
@@ -127,9 +130,7 @@ class DefenderIntercept:
 
 
 		if self.ball.velocity > 0.5:
-			if 	self.our_defender.catcher == 'open':
-				self.our_defender.catcher = 'closed'
-				return 'grab'
+
 			if self.ball.y > self.world.our_goal.y + 45 and self.ball.y < self.world.our_goal.y+ self.world.our_goal.height -45:
 				y=self.ball.y
 			else:
@@ -142,7 +143,7 @@ class DefenderIntercept:
 					y = self.world.our_goal.y+ self.world.our_goal.height
 
 
-			distance, angle = self.our_defender.get_direction_to_point(self.our_defender.x, self.ball.y)
+			distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.ball.y)
 			print distance, '  ', angle
 			return self.calculate_motor_speed(distance, angle)
 		else:
@@ -193,8 +194,11 @@ class DefenderPass:
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
 		self.center_x = (min_x + max_x) / 2
 		self.center_y = (min_y + max_y) / 2
-		self.left_point_y = self.center_y + 50
-		self.right_point_y = self.center_y - 50
+		self.left_point_y = self.center_y + 70
+		self.right_point_y = self.center_y - 70
+		print 'Center x:' + str(self.center_x)
+		print 'Left Shooting point y:' + str(self.left_point_y)
+		print 'Right Shooting point y:' + str(self.right_point_y)
 		self.goal_x = self.world.their_goal.x
 		self.goal_y = self.world.their_goal.y + self.world.their_goal.height / 2
 
@@ -204,6 +208,14 @@ class DefenderPass:
 		self.their_attacker = self.world.their_attacker
 		self.ball = self.world.ball
 
+		self.opponent_zone = self.world._pitch._zones[self.world.our_attacker.zone]
+		opp_min_x, opp_max_x, opp_min_y, opp_max_y = self.opponent_zone.boundingBox()
+		self.opponent_x = (opp_max_x + opp_min_x)/2
+		self.opponent_left_y = (opp_max_y + opp_min_y)/2 + 100
+		self.opponent_right_y = (opp_max_y + opp_min_y)/2 - 100
+
+
+
 
 
 
@@ -211,30 +223,34 @@ class DefenderPass:
 	def pick_action(self):
 		if self.their_attacker.y < self.center_y:
 			y = self.left_point_y
+			angle_to_teammate = self.our_defender.get_rotation_to_point(self.opponent_x, self.our_attacker.y +20)
 		else:
 			y = self.right_point_y
+			angle_to_teammate = self.our_defender.get_rotation_to_point(self.opponent_x, self.our_attacker.y - 20)
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
-		angle_to_teammate = self.our_defender.get_rotation_to_point(self.our_attacker.x, self.our_attacker.y)
+		
+		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Catcher closed:' + self.our_defender.catcher
 
-		if distance < 20 and angle_to_teammate < math.pi / 12:
+		if distance < 35 and abs(angle_to_teammate) < math.pi / 18:
 			self.our_defender.catcher = 'open'
-			return 'kick'
+			return [('open_catcher', 0.5), ('kick', 1)]
 
-		elif distance < 20 and angle_to_teammate > math.pi / 12:
+		elif distance < 35 and abs(angle_to_teammate) > math.pi / 18:
 
 			if angle_to_teammate > 0:
-				return 'turn_left'
+				return 'turn_left_aiming'
 			elif angle_to_teammate < 0:
-				return 'turn_right'
+				return 'turn_right_aiming'
 
-		elif distance > 20 and angle < math.pi / 12:
+		elif distance > 20 and abs(angle) < math.pi / 12:
 
 			return 'drive_slow'
-		elif distance > 20 and angle > 11 * math.pi / 12:
+		elif distance > 20 and abs(angle) > 11 * math.pi / 12:
 			return 'backwards'
 
-		elif distance > 20 and angle > math.pi / 12:
+		elif distance > 20 and abs(angle) > math.pi / 12:
 
 			if angle > 0:
 				return 'turn_left'

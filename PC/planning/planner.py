@@ -33,7 +33,7 @@ class Planner:
 		ball = self._world.ball
 
 		
-		
+		print ""
 		if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) == False:
 			print 'DefenderIntercept'
 			self._world.our_defender.catcher_area = {'width' : 30, 'height' : 30, 'front_offset' : 5} 					
@@ -41,12 +41,12 @@ class Planner:
 			return self._robot_current_strategy.pick_action()
 		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and our_defender.has_ball(ball) == False:
 			print 'DefenderGrab'
-			self._world.our_defender.catcher_area = {'width' : 30, 'height' : 30, 'front_offset' : 5}           
+			self._world.our_defender.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 8}           
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 		elif our_defender.has_ball(ball):
 			print 'DefenderPass'   
-			self._world.our_defender.catcher_area = {'width' : 35, 'height' : 40, 'front_offset' : 5} 
+			self._world.our_defender.catcher_area = {'width' : 100, 'height' : 100, 'front_offset' : -40} 
 			self._robot_current_strategy = self.defender_pass_strategy
 			return self._robot_current_strategy.pick_action()
 
