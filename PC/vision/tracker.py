@@ -179,8 +179,6 @@ class RobotTracker(Tracker):
             'front': None
         }
 
-
-
         self.color = [calibration[color]]
 
         self.color_name = color
@@ -195,54 +193,55 @@ class RobotTracker(Tracker):
         Returns:
             list of corner points
         """
+
+        height, width, channel = frame.shape
+
+        if height > 0 and width > 0:
+            cv2.cv.SaveImage("test_blob.jpg", cv2.cv.fromarray(frame.copy()))
         # Adjustments are colors and contrast/blur
-        cv2.cv.SaveImage("get_plate.jpg", cv2.cv.fromarray(frame.copy()))
-        temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
-        gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
-        cv2.cv.SaveImage("test_gray_plate.jpg", cv2.cv.fromarray(gray))
+            adjustments = self.calibration['plate']
+            contours = self.get_contours(frame.copy(), adjustments)
+            return self.get_contour_corners(self.join_contours(contours))
 
-        thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
-                                        cv2.THRESH_BINARY_INV, 11, 2)
-
-        cv2.cv.SaveImage("test_plate.jpg", cv2.cv.fromarray(thresh1))
-
-
-        adjustments = self.calibration['plate']
-        contours = self.get_contours(frame.copy(), adjustments)
-        return self.get_contour_corners(self.join_contours(contours))
+        return None
 
     def get_blob(self, frame):
         height, width, channel = frame.shape
 
-
         if height > 0 and width > 0:
+            #frame = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
+            temp = self.kmeans(frame)
 
-            cv2.cv.SaveImage("test_blob.jpg", cv2.cv.fromarray(frame.copy()))
-           # temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
-           # gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
+            cv2.cv.SaveImage("test_blob.jpg", cv2.cv.fromarray(temp.copy()))
+            gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
 
-           # gray = cv2.equalizeHist(gray)
+            thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 
-           # cv2.cv.SaveImage("test_blob_hist.jpg", cv2.cv.fromarray(gray.copy()))
+            cv2.cv.SaveImage("test_blob_cnt_thresh.jpg", cv2.cv.fromarray(thresh1.copy()))
+            #thresh1 = cv2.GaussianBlur(thresh1.copy(), (5, 5), 0)
+            contours, hi = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            #cnt = self.get_largest_contour(contours)
 
-            #hresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
-                                            #cv2.THRESH_BINARY, 11, 2)
+            contours = [c for c in contours if 150 < cv2.contourArea(c) < 250]
 
-            #thresh1 = cv2.adaptiveThreshold(gray,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY,11,2)
-
-            #cv2.cv.SaveImage("test_blob_cnt_thresh.jpg", cv2.cv.fromarray(thresh1.copy()))
-
-           # contours, hi = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             #cnt = self.join_contours(contours)
-            adjustments = self.calibration['yellow']
-            contours = self.get_contours(frame.copy(), adjustments)
 
-            contours = [(c, cv2.contourArea(c)) for c in contours if 20 < cv2.contourArea(c) < 60]
-            contours.sort(key=lambda tup: tup[1], reverse=True)
-            if contours and len(contours):
+            cnt = reduce(lambda x, y: np.concatenate((x, y)), contours) if len(contours) else None
 
-                cnt = self.get_contour_extremes(contours[0][0])
-                return cnt
+            if cnt is not None:
+                rect = cv2.minAreaRect(cnt)
+                #cnt = self.get_contour_corners(cnt)
+
+                box = cv2.cv.BoxPoints(rect)
+
+                box = np.int0(box)
+
+                cv2.drawContours(frame, [box], -1, (0, 255, 0), 1)
+                cv2.cv.SaveImage("test_blob_cnt.jpg", cv2.cv.fromarray(frame.copy()))
+                return box
+
+        return None
+
 
     def get_dot(self, frame, x_offset, y_offset):
         """
@@ -284,15 +283,12 @@ class RobotTracker(Tracker):
             for cnt in contours_temp:
                 (x, y), radius = cv2.minEnclosingCircle(cnt[0])
                 diffs = 0
-                lengths = []
-                total = 0
                 for c in cnt[0]:
-                    diffs += (radius - self.distance(c[0], (x, y)))**2
+                    diffs += (radius - self.distance(c[0], (x, y))) ** 2
 
                 contours.append((cnt[0], diffs))
 
             contours.sort(key=lambda tup: tup[1])
-
 
             if contours and len(contours) > 0:
                 cv2.drawContours(frame, [contours[0][0]], -1, (0, 255, 0), 1)
@@ -300,7 +296,6 @@ class RobotTracker(Tracker):
                 cv2.cv.SaveImage("test_col_cnt.jpg", cv2.cv.fromarray(frame))
                 (x, y), radius = self.get_contour_centre(contours[0][0])
                 return (Center(x + x_offset, y + y_offset), contours[0][1], radius)
-
 
         return (None, None, None)
 
@@ -343,91 +338,30 @@ class RobotTracker(Tracker):
 
             size = 24
             plate_frame = frame.copy()[
-                                int(dot.y)-size:int(dot.y) + size,
-                                int(dot.x)-size:int(dot.x) + size
-                                ]
-            self.get_blob(plate_frame)
-            # Since get_dot adds offset, we need to remove it
-            dot_temp = Center(dot[0] - self.offset, dot[1])
+                          int(dot.y) - size:int(dot.y) + size,
+                          int(dot.x) - size:int(dot.x) + size
+            ]
+            plate_corners = self.get_blob(plate_frame)
+            print 'Calc', plate_corners
 
-            plate_corners = [(int(dot.x)-size/2, int(dot.y)+size/2), (int(dot.x)-size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)+size/2)]
+            est = [(int(dot.x) - size / 2, int(dot.y) + size / 2), (int(dot.x) - size / 2, int(dot.y) - size),
+                   (int(dot.x) + size / 2, int(dot.y) - size), (int(dot.x) + size / 2, int(dot.y) + size / 2)]
 
-            # Find two points from plate_corners that are the furthest from the dot
-
-            distances = [
-                (
-                    (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
-                    p[0],  # x coord
-                    p[1]  # y coord
-                ) for p in plate_corners]
-
-            distances.sort(key=lambda x: x[0], reverse=True)
-
-            # Front of the kicker should be the first two points in distances
-            front = distances[:2]
-            rear = distances[2:]
-
-            # Calculate which of the rear points belongs to the first of the front
-            first = front[0]
-            front_rear_distances = [
-                (
-                    (first[1] - p[0]) ** 2 + (first[2] - p[1]) ** 2,
-                    p[1],
-                    p[2]
-                ) for p in rear]
-            front_rear_distances.sort(key=lambda x: x[0])
+            print 'Est:', est
 
 
-            # Direction is a line between the front points and rear points
-            direction = (
-                Center(
-                    (first[1] + front[1][1]) / 2 + self.offset,
-                    (front[1][2] + first[2]) / 2),
-                Center(
-                    (front_rear_distances[1][1] + front_rear_distances[0][1]) / 2 + self.offset,
-                    (front_rear_distances[1][2] + front_rear_distances[0][2]) / 2)
-            )
+            #if plate_corners is None:
+            plate_corners = est
 
-            angle = self.get_angle(direction[1], direction[0])
-
-            # Offset the x coordinates
-
-
-
-
-            if front is not None:
-                front = [(p[1] + self.offset, p[2]) for p in front]
-
-            if rear is not None and dot is not None:
-                rear = [(p[1] + self.offset, p[2]) for p in rear]
-
-                width = self.distance(rear[0], rear[1])
-
-                d1 = self.dist_point_line(front[0], rear[0], dot)
-                d2 = self.dist_point_line(front[1], rear[1], dot)
-
-                if d1 < d2:
-                    d = d1
-                    i = 1
-                else:
-                    d = d2
-                    i = -1
-
-                delta = width / 2.0 - d
-                print 'Delta', delta
-                print 'Width', width
-                unit_vector = [(rear[0][0] - rear[1][0]) / width, (rear[0][1] - rear[1][1]) / width]
-
-                offset_1 = int(np.ceil(i * unit_vector[0] * delta))
-                offset_2 = int(np.ceil(i * unit_vector[1] * delta))
-
-                print 'Offset', offset_1
-
-                # Offset the x coordinates
-                plate_corners = [(p[0]+offset_1, p[1]+offset_2) for p in plate_corners]
-
-            # Since get_dot adds offset, we need to remove it
+            # print marker_corners
+            if plate_corners is not None:
+                # print 'Bounding', self.get_bounding_box(plate_corners)
+                # Since get_dot adds offset, we need to remove it
                 dot_temp = Center(dot[0] - self.offset, dot[1])
+
+                # plate_corners = [(x + self.offset, y) for (x, y) in plate_corners]
+
+                #plate_corners = [(int(dot.x)-size/2, int(dot.y)+size/2), (int(dot.x)-size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)-size), (int(dot.x)+size/2, int(dot.y)+size/2)]
 
                 # Find two points from plate_corners that are the furthest from the dot
 
@@ -442,49 +376,126 @@ class RobotTracker(Tracker):
 
                 # Front of the kicker should be the first two points in distances
                 front = distances[:2]
+                rear = distances[2:]
+
+                # Calculate which of the rear points belongs to the first of the front
+                first = front[0]
+                front_rear_distances = [
+                    (
+                        (first[1] - p[0]) ** 2 + (first[2] - p[1]) ** 2,
+                        p[1],
+                        p[2]
+                    ) for p in rear]
+                front_rear_distances.sort(key=lambda x: x[0])
+
+
+                # Direction is a line between the front points and rear points
+                direction = (
+                    Center(
+                        (first[1] + front[1][1]) / 2 + self.offset,
+                        (front[1][2] + first[2]) / 2),
+                    Center(
+                        (front_rear_distances[1][1] + front_rear_distances[0][1]) / 2 + self.offset,
+                        (front_rear_distances[1][2] + front_rear_distances[0][2]) / 2)
+                )
+
+                angle = self.get_angle(direction[1], direction[0])
+
+                # Offset the x coordinates
+
+
+
+
                 if front is not None:
                     front = [(p[1] + self.offset, p[2]) for p in front]
 
+                if rear is not None and dot is not None:
+                    rear = [(p[1] + self.offset, p[2]) for p in rear]
 
-            elif self.data['box'] is None:
-                plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
+                    width = self.distance(rear[0], rear[1])
+
+                    d1 = self.dist_point_line(front[0], rear[0], dot)
+                    d2 = self.dist_point_line(front[1], rear[1], dot)
+
+                    if d1 < d2:
+                        d = d1
+                        i = 1
+                    else:
+                        d = d2
+                        i = -1
+
+                    delta = width / 2.0 - d
+                    print 'Delta', delta
+                    print 'Width', width
+                    unit_vector = [(rear[0][0] - rear[1][0]) / width, (rear[0][1] - rear[1][1]) / width]
+
+                    offset_1 = int(np.ceil(i * unit_vector[0] * delta))
+                    offset_2 = int(np.ceil(i * unit_vector[1] * delta))
+
+                    print 'Offset', offset_1
+
+                    # Offset the x coordinates
+                    #plate_corners = [(p[0] + offset_1, p[1] + offset_2) for p in plate_corners]
+
+                    # Since get_dot adds offset, we need to remove it
+                    dot_temp = Center(dot[0] - self.offset, dot[1])
+
+                    # Find two points from plate_corners that are the furthest from the dot
+
+                    distances = [
+                        (
+                            (dot_temp.x - p[0]) ** 2 + (dot_temp.y - p[1]) ** 2,  # distance
+                            p[0],  # x coord
+                            p[1]  # y coord
+                        ) for p in plate_corners]
+
+                    distances.sort(key=lambda x: x[0], reverse=True)
+
+                    # Front of the kicker should be the first two points in distances
+                    front = distances[:2]
+                    if front is not None:
+                        front = [(p[1] + self.offset, p[2]) for p in front]
 
 
-            if dot is None:
-                dot = self.data['dot']
+                elif self.data['box'] is None:
+                    pass
+                    #plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
 
-            if direction is None:
-                direction = self.data['direction']
+                if dot is None:
+                    dot = self.data['dot']
 
-            if front is None:
-                front = self.data['front']
+                if direction is None:
+                    direction = self.data['direction']
 
-            if angle is None:
-                angle = self.data['angle']
+                if front is None:
+                    front = self.data['front']
 
-            if x is None:
-                x = self.data['x']
+                if angle is None:
+                    angle = self.data['angle']
 
-            if y is None:
-                y = self.data['y']
+                if x is None:
+                    x = self.data['x']
 
-            if plate_corners is None:
-                plate_corners = self.data['box']
+                if y is None:
+                    y = self.data['y']
 
-            self.data = {
-                'x': None,
-                'y': None,
-                'name': self.name,
-                'angle': angle,
-                'dot': dot,
-                'box': plate_corners,
-                'direction': None,
-                'front': None,
-                'dot_diff': diff
-            }
+                if plate_corners is None:
+                    plate_corners = self.data['box']
 
-            queue.put(self.data)
-            return
+                self.data = {
+                    'x': None,
+                    'y': None,
+                    'name': self.name,
+                    'angle': angle,
+                    'dot': dot,
+                    'box': plate_corners,
+                    'direction': None,
+                    'front': None,
+                    'dot_diff': diff
+                }
+
+                queue.put(self.data)
+                return
 
         queue.put(self.data)
 
@@ -514,11 +525,11 @@ class RobotTracker(Tracker):
 
         # if self.name == 'Their Defender':
         # colour_centers = np.array([colour_centers])
-        #     print "********************", self.name
-        #     print colour_centers
+        # print "********************", self.name
+        # print colour_centers
         #     print 'HSV######'
         #     print cv2.cvtColor(colour_centers, cv2.COLOR_BGR2HSV)
-
+        cv2.cv.SaveImage("kmeans.jpg", cv2.cv.fromarray(res2))
         return res2
 
 
@@ -541,7 +552,7 @@ class BallTracker(Tracker):
         # if pitch == 0:
         # self.color = PITCH0['red']
         # else:
-        #     self.color = PITCH1['red']
+        # self.color = PITCH1['red']
         self.color = [calibration['red']]
         self.offset = offset
         self.name = name
