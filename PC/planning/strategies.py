@@ -19,6 +19,13 @@ class DefenderGrab:
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
+
+		if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
+
+			self.our_defender.catcher = 'open'
+			return 'open_catcher'
+
+
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
 
 			self.our_defender.catcher = 'closed'
@@ -35,14 +42,14 @@ class DefenderGrab:
 			if abs(angle) > math.pi / 9:
 				if abs(angle) > math.pi / 4:
 					if angle > 0:
-						return 'turn_left_slow'
+						return [('turn_left', 0.2), ('stop', 0)]
 					elif angle < 0:
-						return 'turn_right_slow'
+						return [('turn_right', 0.2), ('stop', 0)]
 				else:
 					if angle > 0:
-						return 'turn_left_slow'
+						return [('turn_left', 0.2), ('stop', 0)]
 					elif angle < 0:
-						return 'turn_right_slow'
+						return [('turn_right', 0.2), ('stop', 0)]
 
 			elif distance > 120:
 				return 'drive'
@@ -167,9 +174,9 @@ class DefenderIntercept:
 			elif abs(angle) > angle_thresh:
 
 				if angle > 0:
-					return 'turn_left'
+					return [('turn_left', 0.2), ('stop', 0.2)]
 				elif angle < 0:
-					return 'turn_right'
+					return [('turn_right', 0.2), ('stop', 0.2)]
 			else:
 				return 'drive_intercept'
 
@@ -240,9 +247,9 @@ class DefenderPass:
 		elif distance < 35 and abs(angle_to_teammate) > math.pi / 18:
 
 			if angle_to_teammate > 0:
-				return 'turn_left_aiming'
+				return [('turn_left', 0.2), ('stop', 0.2)]
 			elif angle_to_teammate < 0:
-				return 'turn_right_aiming'
+				return [('turn_right', 0.2), ('stop', 0.2)]
 
 		elif distance > 20 and abs(angle) < math.pi / 12:
 
@@ -253,6 +260,6 @@ class DefenderPass:
 		elif distance > 20 and abs(angle) > math.pi / 12:
 
 			if angle > 0:
-				return 'turn_left'
+				return [('turn_left', 0.2), ('stop', 0.2)]
 			elif angle < 0:
-				return 'turn_right'
+				return [('turn_right', 0.2), ('stop', 0.2)]

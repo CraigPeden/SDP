@@ -46,7 +46,8 @@ class Controller:
 
 		# Set up the Arduino communications
 		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
-		#self.arduino.grabberUp()
+		time.sleep(2.5)
+		self.arduino.grabberUp()
 		
 
 		# Set up camera for frames
@@ -194,8 +195,8 @@ class Attacker_Controller(Robot_Controller):
 		action = controller.robot_action_list[0][0]
 
 		slow_speed = 3
-		turn_speed = 4
-		turn_speed_slow = 4
+		turn_speed = 7
+		turn_speed_slow = 3
 		turn_speed_aiming = 3
 		fast_speed = 5
 
@@ -252,13 +253,13 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'drive':
 		  
-			comm.drive(fast_speed, fast_speed)
+			comm.drive(fast_speed, fast_speed+1)
 		elif action == 'drive_intercept':
 		  
 			comm.drive(fast_speed, fast_speed)	
 		elif action == 'drive_slow':
 		  
-			comm.drive(slow_speed, slow_speed)
+			comm.drive(slow_speed, slow_speed+1)
 
 		elif action == 'stop':
 		  
