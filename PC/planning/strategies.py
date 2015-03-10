@@ -55,7 +55,7 @@ class DefenderGrab:
 				return 'drive'
 
 			else:
-				return 'drive_slow'
+				return [('drive_slow', 0.2), ('stop', 0)]
 
 
 class AttackerShoot:
@@ -122,7 +122,7 @@ class DefenderIntercept:
 
 		self.ball = world.ball
 		self.zone = world._pitch._zones[self.world.our_defender.zone]
-		min_x, max_x, min_y, max_y = self.zone.boundingBox()
+		min_x, max_x, min_y, self.max_y = self.zone.boundingBox()
 		self.center_x = (min_x + max_x) / 2
 		self.our_defender = world.our_defender
 		self.our_attacker = world.our_attacker
@@ -136,31 +136,26 @@ class DefenderIntercept:
 	def pick_action(self):
 
 
-		if self.ball.velocity > 0.5:
+	
 
-			if self.ball.y > self.world.our_goal.y + 45 and self.ball.y < self.world.our_goal.y+ self.world.our_goal.height -45:
-				y=self.ball.y
-			else:
-				top_diff =  self.ball.y -  self.world.our_goal.y+ self.world.our_goal.height
-				bottom_diff = 	self.world.our_goal.y - self.ball.y
-
-				if top_diff > bottom_diff:
-					y = self.world.our_goal.y
-				else:
-					y = self.world.our_goal.y+ self.world.our_goal.height
-
-
-			distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.ball.y)
-			print distance, '  ', angle
-			return self.calculate_motor_speed(distance, angle)
-		else:
-			print self.ball.velocity    	
+		if self.ball.y > 80 and self.ball.y < 215:
+			y=(self.ball.y+150)/2
+		elif self.ball.y < 80:
+			y=95
+		else: 
+			y=180	
+			
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
+		print self.center_x, y
+		return self.calculate_motor_speed(distance, angle)
+		   	
 
 
 	def calculate_motor_speed(self, distance, angle):
-		angle_thresh = math.pi / 7
+		angle_thresh = math.pi / 4
 		direction_threshhold = math.pi/7
-		distance_threshhold = 15
+		distance_threshhold = 30
+
 		if not (distance is None):
 
 			
@@ -174,9 +169,9 @@ class DefenderIntercept:
 			elif abs(angle) > angle_thresh:
 
 				if angle > 0:
-					return [('turn_left', 0.2), ('stop', 0.2)]
+					return 'turn_left_slow'
 				elif angle < 0:
-					return [('turn_right', 0.2), ('stop', 0.2)]
+					return 'turn_right_slow'
 			else:
 				return 'drive_intercept'
 

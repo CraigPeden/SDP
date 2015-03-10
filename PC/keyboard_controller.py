@@ -33,11 +33,11 @@ while key != ord('q') and key != ord('Q'):
 
     if key == curses.KEY_UP: 
         stdscr.addstr(12, 0, "UP       ")
-        comms.drive(7,7)
+        comms.drive(4,5)
 
     if key == curses.KEY_DOWN: 
         stdscr.addstr(12, 0, "DOWN     ")
-        comms.drive(-7,-7)
+        comms.drive(-4,-5)
         
     if key == curses.KEY_LEFT: 
         stdscr.addstr(12, 0, "LEFT     ")
