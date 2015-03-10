@@ -46,11 +46,15 @@ class Controller:
 
 
 		# Set up the Arduino communications
-
+<<<<<<< HEAD
 		self.arduino = arduinoComm.Communication("/dev/pts/0", 9600)
+		self.arduino.kick()
+=======
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
 		time.sleep(2.5)
 		self.arduino.grabberUp()
-
+		
+>>>>>>> kostadin-dev
 
 		# Set up camera for frames
 		self.camera = Camera(port=video_port, pitch=self.pitch)
@@ -115,7 +119,15 @@ class Controller:
 				# Find appropriate action
 				self.planner.update_world(model_positions)
 				
+<<<<<<< HEAD
+				robot_action = self.planner.plan()
 
+
+
+
+				if self.controller is not None:
+					self.controller.execute(self.arduino, robot_action)
+=======
 				if time.time() >= self.timeOfNextAction:
 					if self.robot_action_list == []:
 						plan = self.planner.plan()
@@ -127,6 +139,7 @@ class Controller:
 				
 					if self.controller is not None:
 						self.controller.execute(self.arduino, self)
+>>>>>>> kostadin-dev
 	   
 
 				# Information about the grabbers from the world

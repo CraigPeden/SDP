@@ -13,7 +13,9 @@ class Postprocessing(object):
         self._vectors['our_defender'] = {'vec': Vector(0, 0, 0, 0), 'time': 0}
         self._vectors['their_defender'] = {'vec': Vector(0, 0, 0, 0), 'time': 0}
         self._time = 0
-
+        self.ball_current = Vector(0,0,0,0)
+        self.ball_prev = Vector(0,0,0,0)
+        self.ball_2_prev = Vector(0,0,0,0)
     def analyze(self, vector_dict):
         '''
         This method analyzes current positions and previous object vector.
@@ -32,12 +34,22 @@ class Postprocessing(object):
         This method calculates the angle and the velocity of the ball.
         '''
         if not(info['x'] is None) and not (info['y'] is None):
+
+            if self._time != self._vectors['ball']['time']:
+                self.ball_2_prev = self.ball_1_prev
+                self.ball_1_prev = self.ball_current
+
+
             delta_x = info['x'] - self._vectors['ball']['vec'].x
             delta_y = info['y'] - self._vectors['ball']['vec'].y
-            velocity = hypot(delta_y, delta_x)/(self._time - self._vectors['ball']['time'])
+            velocity = (hypot(delta_y, delta_x) )/(self._time - self._vectors['ball']['time'])
+            velocity = (velocity + self.ball_2_prev.velocity + self.ball_1_prev.velocity) /3
             angle = atan2(delta_y, delta_x) % (2*pi)
+
             self._vectors['ball']['vec'] = Vector(info['x'], info['y'], angle, velocity)
+            self.ball_current = Vector(info['x'], info['y'], angle, velocity)
             self._vectors['ball']['time'] = self._time
+
             return Vector(int(info['x']), int(info['y']), angle, velocity)
         else:
             return deepcopy(self._vectors['ball']['vec'])
