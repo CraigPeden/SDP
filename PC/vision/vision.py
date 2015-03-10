@@ -275,6 +275,7 @@ class GUI(object):
     VISION = 'SUCH VISION'
     BG_SUB = 'BG Subtract'
     NORMALIZE = 'Normalize  '
+    CALIBRATE = 'Calibrate Normalization'
     COMMS = 'Communications on/off '
 
     def nothing(self, x):
@@ -290,6 +291,7 @@ class GUI(object):
 
         cv2.createTrackbar(self.BG_SUB, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.NORMALIZE, self.VISION, 0, 1, self.nothing)
+        cv2.createTrackbar(self.CALIBRATE, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(
             self.COMMS, self.VISION, 1, 1, self.nothing)
 
@@ -358,6 +360,8 @@ class GUI(object):
         if preprocess is not None:
             preprocess['normalize'] = self.cast_binary(
                 cv2.getTrackbarPos(self.NORMALIZE, self.VISION))
+            preprocess['calibrate'] = self.cast_binary(
+                cv2.getTrackbarPos(self.CALIBRATE, self.VISION))
             preprocess['background_sub'] = self.cast_binary(
                 cv2.getTrackbarPos(self.BG_SUB, self.VISION))
 
