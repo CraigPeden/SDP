@@ -21,7 +21,7 @@ class Controller:
 	Primary source of robot control. Ties vision and planning together.
 	"""
 
-	def __init__(self, pitch, color, our_side, our_role, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
 		"""
 		Entry point for the SDP system.
 
@@ -46,8 +46,11 @@ class Controller:
 
 
 		# Set up the Arduino communications
-		self.arduino = arduinoComm.Communication("/dev/pts/0", 9600)
-		self.arduino.kick()
+
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		time.sleep(2.5)
+		self.arduino.grabberUp()
+
 
 		# Set up camera for frames
 		self.camera = Camera(port=video_port, pitch=self.pitch)
@@ -65,7 +68,7 @@ class Controller:
 		self.postprocessing = Postprocessing()
 
 		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, our_role=our_role)
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
 
 		# Set up GUI
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
@@ -73,9 +76,15 @@ class Controller:
 		self.color = color
 		self.side = our_side
 
+		self.timeOfNextAction = 0
+
 		self.preprocessing = Preprocessing()
 	#it doesn't matter whether it is an Attacker or a Defender Controller
-		self.controller = Attacker_Controller()
+		self.controller = Attacker_Controller(self.planner._world)
+
+		self.robot_action_list = []
+
+
 
 
 
@@ -106,6 +115,7 @@ class Controller:
 				# Find appropriate action
 				self.planner.update_world(model_positions)
 				
+<<<<<<< HEAD
 				robot_action = self.planner.plan()
 
 
@@ -113,6 +123,19 @@ class Controller:
 
 				if self.controller is not None:
 					self.controller.execute(self.arduino, robot_action)
+=======
+				if time.time() >= self.timeOfNextAction:
+					if self.robot_action_list == []:
+						plan = self.planner.plan()
+
+						if isinstance(plan, list):
+							self.robot_action_list = plan
+						else:
+							self.robot_action_list = [(plan, 0)]
+				
+					if self.controller is not None:
+						self.controller.execute(self.arduino, self)
+>>>>>>> kostadin-dev
 	   
 
 				# Information about the grabbers from the world
@@ -133,7 +156,7 @@ class Controller:
 
 				self.GUI.draw(
 					frame, model_positions, actions, regular_positions, fps, robotState,
-				   "we dont need it", robot_action, "we dont need it", grabbers,
+				   "we dont need it", '', "we dont need it", grabbers,
 					our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
 				counter += 1
 
@@ -154,12 +177,12 @@ class Robot_Controller(object):
 	Robot_Controller superclass for robot control.
 	"""
 
-	def __init__(self):
+	def __init__(self, world):
 		"""
 		Connect to Brick and setup Motors/Sensors.
 		"""
 		self.current_speed = 0
-
+		self.world = world
 	def shutdown(self, comm):
 		# TO DO
 			pass
@@ -172,29 +195,36 @@ class Attacker_Controller(Robot_Controller):
 	Attacker implementation.
 	"""
 
-	def __init__(self):
+	def __init__(self, world):
 		"""
 		Do the same setup as the Robot class, as well as anything specific to the Attacker.
 		"""
-		super(Attacker_Controller, self).__init__()
-		self.last_kicker_action = time.time()
+		super(Attacker_Controller, self).__init__(world)
+		
 
-	def execute(self, comm, action):
+	def execute(self, comm, controller):
 		"""
 		Execute robot action.
 		"""
+		action = controller.robot_action_list[0][0]
+
+		slow_speed = 3
+		turn_speed = 7
+		turn_speed_slow = 3
+		turn_speed_aiming = 3
+		fast_speed = 5
+
 		if action != None:
 			print action    
 
 		if action == 'grab':
 
 			comm.stop()
-			comm.grab()
+			comm.grabberDown()
 
 		elif action == 'open_catcher':
 			comm.stop()   
-			comm.raiseKicker()
-
+			comm.grabberUp()
 	
 		elif action == 'kick':
 
@@ -204,46 +234,55 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'turn_left':
 
 		  
-			comm.drive(-4, 4)
+			comm.drive(-turn_speed, turn_speed)
 
 		elif action == 'turn_right':
 		  
-			comm.drive(4, -4)
+			comm.drive(turn_speed, -turn_speed)
 
 		elif action == 'turn_left_slow':
 
 		  
-			comm.drive(-3, 3)
+			comm.drive(-turn_speed_slow, turn_speed_slow)
 
 		elif action == 'turn_right_slow':
 		  
-			comm.drive(3, -3)
+			comm.drive(turn_speed_slow, -turn_speed_slow)
+
+		elif action == 'turn_left_aiming':
+
+		  
+			comm.drive(-turn_speed_aiming, turn_speed_aiming)
+
+		elif action == 'turn_right_aiming':
+		  
+			comm.drive(turn_speed_aiming, -turn_speed_aiming)
 
 		elif action == 'backwards':
 		  
-			comm.drive(-4, -4)
+			comm.drive(-slow_speed, -slow_speed)
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-7, -7)	
+			comm.drive(-fast_speed, -fast_speed)	
 
 		elif action == 'drive':
 		  
-			comm.drive(4, 4)
+			comm.drive(fast_speed, fast_speed+1)
 		elif action == 'drive_intercept':
 		  
-			comm.drive(7, 7)	
+			comm.drive(fast_speed, fast_speed)	
 		elif action == 'drive_slow':
 		  
-			comm.drive(3, 3)
-
-		elif action == 'backwards':
-			comm.drive(-4, 4)
+			comm.drive(slow_speed, slow_speed+1)
 
 		elif action == 'stop':
 		  
 			comm.drive(0, 0)
 		else:
 			comm.stop()
+
+		controller.timeOfNextAction = time.time() + controller.robot_action_list[0][1]
+		del controller.robot_action_list[0]
 		
 			
 			
@@ -256,20 +295,20 @@ class Attacker_Controller(Robot_Controller):
 
 
 
+
 if __name__ == '__main__':
 	import argparse
 	parser = argparse.ArgumentParser()
 	parser.add_argument("pitch", help="[0] Main pitch, [1] Secondary pitch")
 	parser.add_argument("side", help="The side of our defender ['left', 'right'] allowed.")
 	parser.add_argument("color", help="The color of our team - ['yellow', 'blue'] allowed.")
-	parser.add_argument("our_role", help="The color of our team - ['yellow', 'blue'] allowed.")
 	parser.add_argument(
 		"-n", "--nocomms", help="Disables sending commands to the robot.", action="store_true")
 
 	args = parser.parse_args()
 	if args.nocomms:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role , comms=0).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side, comms=0).wow()
 	else:
 		c = Controller(
-			pitch=int(args.pitch), color=args.color, our_side=args.side, our_role=args.our_role).wow()
+			pitch=int(args.pitch), color=args.color, our_side=args.side).wow()

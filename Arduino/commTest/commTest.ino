@@ -1,3 +1,4 @@
+
 /*      Command byte:
 	|  1 bit  |  1 bit   |  2 bits  |  4 bits  |
 	|   SIG   | CHECKSUM |  OPCODE  | ARGUMENT |
@@ -27,16 +28,36 @@ byte RIGHT_MOTOR_MASK = 0b00100000;
 byte LEFT_MOTOR_MASK = 0b00010000;
 
 /* Timed action */
-boolean kickerAction = false;
 unsigned long kickerTime = millis();
-int kickHold = 330;
-int raiseHold = 220;
-int grabHold = 200;
+int kickerState = 0;
+boolean grabberAction = false;
+unsigned long grabberTime = millis();
+int grabberDown = 300;
+int grabberUp = 500;
+int kickerKick = 200;
+int kickerRetract = 180;
+int simpleKick = 500;
+int simpleRetract = 500;
+int kickerSleep = 100;
+
+long readVcc() {
+  long result;
+  // Read 1.1V reference against AVcc
+  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+  delay(2); // Wait for Vref to settle
+  ADCSRA |= _BV(ADSC); // Convert
+  while (bit_is_set(ADCSRA,ADSC));
+  result = ADCL;
+  result |= ADCH<<8;
+  result = 1126400L / result; // Back-calculate AVcc in mV
+  return result;
+}
 
 void setup()
 {
   SDPsetup();
-  Serial.println("Robot started");
+  Serial.println("Robot started"); 
+  Serial.println( readVcc(), DEC );
 }
 
 int getArg(byte msg)
@@ -56,33 +77,41 @@ int countSetBits(int n)
   return count;
 }
 
-void kickerStop()
-{
-    kickerAction = false;
-    motorStop(2);
-}
-
 void controlKicker(int value)
 {
   if(value == 0)
   {
-    /* Grab */
-    kickerTime = millis() + grabHold;
-    kickerAction = true;
-    motorBackward(2,100);
+    /* Grabber down */
+    grabberTime = millis() + grabberDown;
+    grabberAction = true;
+    motorForward(3,100);
   }
   else if(value == 1)
   {
-    /* Kick */
-    kickerTime = millis() + kickHold;
-    kickerAction = true;
-    motorForward(2,100);
+    /* Grabber up */
+    grabberTime = millis() + grabberUp;
+    grabberAction = true;
+    motorBackward(3,100);
   }
   else if(value == 2)
   {
-    /* Raise */
-    kickerTime = millis() + raiseHold;
-    kickerAction = true;
+    /* Kicker routine */
+    kickerTime = millis() + kickerKick;
+    kickerState = 1; //kicker is kicking
+    motorBackward(2,100);
+  }
+  else if(value == 3)
+  {
+    /* Kicker simple kick */
+    kickerTime = millis() + simpleKick;
+    kickerState = 3;
+    motorBackward(2,100);
+  }
+  else if(value == 4)
+  {
+    /* Kicker simple kick */
+    kickerTime = millis() + simpleRetract;
+    kickerState = 3;
     motorForward(2,100);
   }
 }
@@ -101,23 +130,50 @@ void controlMotor(int motor, byte msg)
     {
       motorGear = 15 - motorGear;
       int motorSpeed = 100 - ((motorGear * 100) / 7);
-      motorForward(motor, motorSpeed);
+      motorBackward(motor, motorSpeed);
     }
     else    
     {
       int motorSpeed = 100 - ((motorGear * 100) / 7);
-      motorBackward(motor, motorSpeed);
+      motorForward(motor, motorSpeed);
     }
   }
 }
 
 void loop()
-{
+{  
   /* If the kicker flag kickerAction is set,
   check if the time is reached. */
-  if(kickerAction && (kickerTime < millis()))
+  if(kickerState != 0 && (kickerTime < millis()))
   {
-    kickerStop();
+    if (kickerState == 1)
+    {
+      // Transition from kick to sleep
+      kickerTime = millis() + kickerSleep;
+      kickerState = 2;
+      motorStop(2);      
+    }
+    else if (kickerState == 2)
+    {
+      // Transition from sleep to retract
+      kickerTime = millis() + kickerRetract;
+      kickerState = 3;
+      motorForward(2, 100);   
+    }
+    else if (kickerState == 3)
+    {
+      // Transition from retract to stop
+      kickerState = 0;
+      motorStop(2);
+    }
+  }
+  
+  /* If the grabber flag grabberAction is set,
+  check if the time is reached. */
+  if(grabberAction && (grabberTime < millis()))
+  {
+    grabberAction = false;
+    motorStop(3);
   }
 }
 
@@ -134,17 +190,14 @@ void serialEvent() {
       
       if((msg & KICKER_MASK) == KICKER_MASK)
       {
-        // Serial.println("KICKER");
         controlKicker(getArg(msg));
       }
       else if((msg & RIGHT_MOTOR_MASK) == RIGHT_MOTOR_MASK)
-      {        
-        //Serial.println("MOTOR");
+      {
         controlMotor(0, msg);
       }
       else if((msg & LEFT_MOTOR_MASK) == LEFT_MOTOR_MASK)
       {
-        //Serial.println("LED");
         controlMotor(1, msg);
       }
     }
