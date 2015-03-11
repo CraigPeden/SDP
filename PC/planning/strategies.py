@@ -56,14 +56,17 @@ class DefenderGrab:
 
 			else:
 				return [('drive_slow', 0.2), ('stop', 0)]
+<<<<<<< HEAD
 
+=======
+>>>>>>> fixes
 
 class AttackerShoot(RobotStrategy):
 
 	def __init__(self, world):
-			RobotStrategy.__init__(self, world)
+		RobotStrategy.__init__(self, world)
 
-			#any extra variables or overrides can go here, all the rest is in RobotStrategy
+	#any extra variables or overrides can go here, all the rest is in RobotStrategy
 
 	# def __init__(self, world):
 	# 	self.world = world
@@ -80,7 +83,7 @@ class AttackerShoot(RobotStrategy):
 	# 	else:
 	# 		self.center_x = 160
 	# 		self.center_y = 160
-				
+
 
 
 	def pick_action(self):			# I have rewritten this function with the methods in RobotStrategy
@@ -89,14 +92,14 @@ class AttackerShoot(RobotStrategy):
 		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
 
 		if distance > 30:
-			 return go_to(self.center_x, self.center_y)
+			return go_to(self.center_x, self.center_y)
 
 		elif abs(angle) > math.pi / 12:
 			return orient(self.goal_x, self.goal_y)
 
 		elif distance < 30 and abs(angle_to_goal) < math.pi / 12:
 			self.our_attacker.catcher = 'open'
-			return 'kick' 
+			return 'kick'
 
 
 
@@ -132,6 +135,7 @@ class AttackerShoot(RobotStrategy):
 		# 		return 'turn_right_slow'
 
 
+
 class DefenderIntercept:
 	def __init__(self, world):
 		self.world = world
@@ -149,12 +153,13 @@ class DefenderIntercept:
 		self.their_attacker = world.their_attacker
 
 
-	
+
 
 
 	def pick_action(self):
 
 
+<<<<<<< HEAD
 	
 
 		if self.ball.y > 80 and self.ball.y < 215:
@@ -168,6 +173,21 @@ class DefenderIntercept:
 		print self.center_x, y
 		return self.calculate_motor_speed(distance, angle)
 		   	
+=======
+
+
+		if self.ball.y > 80 and self.ball.y < 215:
+			y=(self.ball.y+150)/2
+		elif self.ball.y < 80:
+			y=95
+		else:
+			y=180
+
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
+		print self.center_x, y
+		return self.calculate_motor_speed(distance, angle)
+
+>>>>>>> fixes
 
 
 	def calculate_motor_speed(self, distance, angle):
@@ -177,13 +197,13 @@ class DefenderIntercept:
 
 		if not (distance is None):
 
-			
+
 
 			if distance < distance_threshhold:
 				return 'stop'
 
 			elif math.pi - abs(angle) < direction_threshhold:
-				return 'backwards_intercept' 		
+				return 'backwards_intercept'
 
 			elif abs(angle) > angle_thresh:
 
@@ -193,13 +213,6 @@ class DefenderIntercept:
 					return 'turn_right_slow'
 			else:
 				return 'drive_intercept'
-
-
-
-
-
-
-
 
 class DefenderPass:
 	def __init__(self, world):
@@ -250,7 +263,7 @@ class DefenderPass:
 			angle_to_teammate = self.our_defender.get_rotation_to_point(self.opponent_x, self.our_attacker.y - 20)
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
-		
+
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 

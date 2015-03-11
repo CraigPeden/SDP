@@ -47,7 +47,7 @@ class Controller:
 
 		# Set up the Arduino communications
 
-		self.arduino = arduinoComm.Communication("/dev/pts/0", 9600)
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
 		time.sleep(2.5)
 		self.arduino.grabberUp()
 

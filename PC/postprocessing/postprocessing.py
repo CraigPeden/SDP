@@ -14,7 +14,7 @@ class Postprocessing(object):
         self._vectors['their_defender'] = {'vec': Vector(0, 0, 0, 0), 'time': 0}
         self._time = 0
         self.ball_current = Vector(0,0,0,0)
-        self.ball_prev = Vector(0,0,0,0)
+        self.ball_1_prev = Vector(0,0,0,0)
         self.ball_2_prev = Vector(0,0,0,0)
     def analyze(self, vector_dict):
         '''
