@@ -76,7 +76,7 @@ class RobotStrategy:
 
 		elif distance > self.position_acc and abs(angle) > math.pi - math.pi / self.angle_acc: 
 			#makes the robot reverse at the right speed
-			if motor_speed == 'drive_intercept' :
+			if motor_speed == 'drive_intercept':
 				return 'backwards_intercept'
 			elif motor_speed == 'drive_slow':
 				return 'backwards_slow'
@@ -84,41 +84,55 @@ class RobotStrategy:
 				return 'backwards'
 
 		if abs(angle) > math.pi / self.angle_acc:
-
-				if abs (angle) > math.pi - math.pi / self.angle_acc:  #if near to a backwards angle then turn to that
-					if angle > 0:
-						return 'turn_right_slow'
-					elif angle < 0:
-						return 'turn_left_slow'
-				elif abs(angle) >  3 * math.pi / self.angle_acc:  	#large angle
-					if angle > 0:
-						return 'turn_left'
-					elif angle < 0:
-						return 'turn_right'
-				else:												#small angle
-					if angle > 0:
-						return 'turn_left_slow'
-					elif angle < 0:
-						return 'turn_right_slow'
-
-	def orient(self, dest_x, dest_y):								#maybe it would be better to pass this function an angle
-
-		distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)
-
-		if abs(angle) > math.pi / self.angle_acc:
-
-				if abs(angle) > 3 * math.pi / self.angle_acc:
-					if angle > 0:
-						return 'turn_left'
-					elif angle < 0:
-						return 'turn_right'
-				else:
-					if angle > 0:
-						return 'turn_left_slow'
-					elif angle < 0:
-						return 'turn_right_slow'
+			if abs(angle) > math.pi - math.pi / self.angle_acc:
+				return self.orient(distance, angle - math.pi)
+			else:
+				return self.orient(distance, angle)
 
 
+				# if abs (angle) > math.pi - math.pi / self.angle_acc:  #if near to a backwards angle then turn to that
+				# 	if angle > 0:
+				# 		return 'turn_right_slow'
+				# 	elif angle < 0:
+				# 		return 'turn_left_slow'
+				# elif abs(angle) >  3 * math.pi / self.angle_acc:  	#large angle
+				# 	if angle > 0:
+				# 		return 'turn_left'
+				# 	elif angle < 0:
+				# 		return 'turn_right'
+				# else:												#small angle
+				# 	if angle > 0:
+				# 		return 'turn_left_slow'
+				# 	elif angle < 0:
+				# 		return 'turn_right_slow'
+
+	def orient(self, distance, angle, turn_speed='two_wheel'):	#maybe it would be better to pass this function an angle
+		assert turn_speed in ['two_wheel', 'one_wheel']
+		#distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)
+
+		if abs(angle) > math.pi / self.angle_acc and turn_speed:
+				if turn_speed == 'two_wheel':
+						if abs(angle) > 3 * math.pi / self.angle_acc:
+							if angle > 0:
+								return 'turn_left'
+							elif angle < 0:
+								return 'turn_right'
+						else:
+							if angle > 0:
+								return 'turn_left_slow'
+							elif angle < 0:
+								return 'turn_right_slow'
+				elif turn_speed == 'one wheel':
+						if abs(angle) > 3 * math.pi / self.angle_acc:
+							if angle > 0:
+								return 'turn_left_one_wheel'
+							elif angle < 0:
+								return 'turn_right_one_wheel'
+						else:
+							if angle > 0:
+								return 'turn_left_one_wheel_slow'
+							elif angle < 0:
+								return 'turn_right_one_wheel_slow'
 
 	def calculate_motor_speed(self, distance, angle):
 		angle_thresh = math.pi / 7
@@ -142,3 +156,16 @@ class RobotStrategy:
 					return 'turn_right'
 			else:
 				return 'drive_intercept'
+
+	def go_curve(self, dest_x, dest_y):		#makes the robot go to a location on a curved path
+
+		angle_thresh = math.pi / 7
+		distance_thresh = 15
+		# will need to be tested to see the steepness of the curve
+		distance, angle = self.our_attacker.get_direction_to_point(dest_x, dest_y)
+
+		if distance > distance_thresh and math.pi - abs(angle) > angle_thresh:
+			if angle > 0:
+				return 'curve_left'
+			if angle < 0:
+				return 'curve_right'

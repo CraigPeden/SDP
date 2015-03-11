@@ -263,16 +263,32 @@ class Attacker_Controller(Robot_Controller):
 		  
 			comm.drive(fast_speed, fast_speed+1)	
 		elif action == 'drive_slow':
-		  
-			comm.drive(slow_speed, slow_speed+1)
-		elif action == 'turn_left_go':
-			comm.drive(fast_speed-2, fast_speed)
-		elif action == 'turn_right_go':
-			comm.drive(fast_speed-2, fast_speed)
-		elif action == 'turn_left_back':
-			comm.drive(-fast_speed+2, -fast_speed)
-		elif action == 'turn_right_back':
-			comm.drive(-fast_speed+2, -fast_speed)	
+
+			comm.drive(slow_speed, slow_speed+1) #new actions for higher degree of turning/movement choices
+
+		elif action == 'curve_left':
+
+			comm.drive(turn_speed, slow_speed )
+
+		elif action == 'curve_right':
+
+			comm.drive(slow_speed, turn_speed)
+
+		elif action == 'turn_left_one_wheel_slow':
+
+			comm.drive(0, slow_speed)
+
+		elif action == 'turn_right_one wheel_slow':
+
+			comm.drive(slow_speed, 0)
+
+		elif action == 'turn_left_one_wheel_fast':
+
+			comm.drive(0, fast_speed)
+
+		elif action == 'turn_right_one_wheel_fast':
+
+			comm.drive(fast_speed, 0)
 
 		elif action == 'stop':
 		  
