@@ -65,6 +65,7 @@ class DefenderGrab:
 
 			else:
 				return [('drive_slow', 0.2), ('stop', 0)]
+
 class AttackerShoot(RobotStrategy):
 
 	def __init__(self, world):
@@ -138,8 +139,6 @@ class AttackerShoot(RobotStrategy):
 		# 	elif angle_to_goal < 0:
 		# 		return 'turn_right_slow'
 
-
-
 class DefenderIntercept:
 	def __init__(self, world):
 		self.world = world
@@ -166,19 +165,15 @@ class DefenderIntercept:
 			y=(self.ball.y+150)/2
 		elif self.ball.y < 80:
 			y=95
-<<<<<<< HEAD
 		else: 
 			y=180	
 			
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 		print self.center_x, y
 		return self.calculate_motor_speed(distance, angle)
-		   	
-=======
-=======
+
 		else:
 			y=180
->>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 			print self.center_x, y
@@ -258,8 +253,8 @@ class DefenderPass:
 			angle_to_pass_point = self.our_defender.get_rotation_to_point(self.opp_max_x, self.opp_min_y)
 			
 
-		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
-
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
+		
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
