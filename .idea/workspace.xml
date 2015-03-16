@@ -3,16 +3,22 @@
   <component name="ChangeListManager">
     <list default="true" id="6586a81c-1bb5-4042-8652-2d53f52dba48" name="Default" comment="">
 <<<<<<< HEAD
+<<<<<<< HEAD
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/controller.py" afterPath="$PROJECT_DIR$/PC/controller.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/planning/strategies_super.py" afterPath="$PROJECT_DIR$/PC/planning/strategies_super.py" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/preprocessing/avg.json" afterPath="$PROJECT_DIR$/PC/preprocessing/avg.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/vision/calibrations/calibrations.json" afterPath="$PROJECT_DIR$/PC/vision/calibrations/calibrations.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/controller.py" afterPath="$PROJECT_DIR$/PC/controller.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/vision/calibrations/croppings.json" afterPath="$PROJECT_DIR$/PC/vision/calibrations/croppings.json" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/postprocessing/postprocessing.py" afterPath="$PROJECT_DIR$/PC/postprocessing/postprocessing.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/PC/planning/strategies.py" afterPath="$PROJECT_DIR$/PC/planning/strategies.py" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     </list>
     <ignored path="SDP.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -47,18 +53,24 @@
         </entry>
       </file>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <file leaf-file-name="controller.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PC/controller.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="-7.548913" vertical-offset="4491" max-vertical-offset="5850">
               <caret line="28" column="70" selection-start-line="28" selection-start-column="70" selection-end-line="28" selection-end-column="70" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <file leaf-file-name="controller.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PC/controller.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="258" max-vertical-offset="5868">
               <caret line="49" column="58" selection-start-line="49" selection-start-column="58" selection-end-line="49" selection-end-column="58" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
               <folding />
             </state>
           </provider>
@@ -68,12 +80,17 @@
         <entry file="file://$PROJECT_DIR$/PC/postprocessing/postprocessing.py">
           <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1602">
               <caret line="42" column="61" selection-start-line="42" selection-start-column="61" selection-end-line="42" selection-end-column="61" />
 =======
             <state vertical-scroll-proportion="-8.8" vertical-offset="510" max-vertical-offset="1602">
               <caret line="43" column="61" selection-start-line="43" selection-start-column="61" selection-end-line="43" selection-end-column="61" />
 >>>>>>> fixes
+=======
+            <state vertical-scroll-proportion="-8.8" vertical-offset="510" max-vertical-offset="1602">
+              <caret line="43" column="61" selection-start-line="43" selection-start-column="61" selection-end-line="43" selection-end-column="61" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
               <folding>
                 <element signature="e#0#34#0" expanded="true" />
               </folding>
@@ -85,12 +102,17 @@
         <entry file="file://$PROJECT_DIR$/PC/planning/planner.py">
           <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <state vertical-scroll-proportion="0.0" vertical-offset="367" max-vertical-offset="1188">
               <caret line="55" column="14" selection-start-line="55" selection-start-column="14" selection-end-line="55" selection-end-column="14" />
 =======
             <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1062">
               <caret line="48" column="14" selection-start-line="48" selection-start-column="14" selection-end-line="48" selection-end-column="14" />
 >>>>>>> fixes
+=======
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1062">
+              <caret line="48" column="14" selection-start-line="48" selection-start-column="14" selection-end-line="48" selection-end-column="14" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -99,18 +121,24 @@
         </entry>
       </file>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <file leaf-file-name="strategies.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PC/planning/strategies.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="4268" max-vertical-offset="5130">
               <caret line="261" column="0" selection-start-line="261" selection-start-column="0" selection-end-line="261" selection-end-column="0" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <file leaf-file-name="strategies.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PC/planning/strategies.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="-6.0" vertical-offset="4320" max-vertical-offset="4986">
               <caret line="56" column="17" selection-start-line="56" selection-start-column="17" selection-end-line="56" selection-end-column="17" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -118,6 +146,7 @@
           </provider>
         </entry>
       </file>
+<<<<<<< HEAD
 <<<<<<< HEAD
       <file leaf-file-name="tracker.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PC/vision/tracker.py">
@@ -136,11 +165,16 @@
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="3024" max-vertical-offset="3168">
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <file leaf-file-name="strategies_super.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/PC/planning/strategies_super.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3222">
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
               <caret line="168" column="35" selection-start-line="168" selection-start-column="35" selection-end-line="168" selection-end-column="35" />
               <folding />
             </state>
@@ -163,6 +197,7 @@
         <entry file="file://$PROJECT_DIR$/PC/vision/vision.py">
           <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <state vertical-scroll-proportion="0.0" vertical-offset="276" max-vertical-offset="9648">
               <caret line="25" column="85" selection-start-line="25" selection-start-column="74" selection-end-line="25" selection-end-column="85" />
               <folding>
@@ -173,6 +208,11 @@
               <caret line="280" column="25" selection-start-line="280" selection-start-column="25" selection-end-line="280" selection-end-column="25" />
               <folding />
 >>>>>>> fixes
+=======
+            <state vertical-scroll-proportion="0.0" vertical-offset="4878" max-vertical-offset="9504">
+              <caret line="280" column="25" selection-start-line="280" selection-start-column="25" selection-end-line="280" selection-end-column="25" />
+              <folding />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
             </state>
           </provider>
         </entry>
@@ -202,6 +242,7 @@
         <option value="$PROJECT_DIR$/PC/planning/models.py" />
         <option value="$PROJECT_DIR$/PC/planning/strategies_super.py" />
 <<<<<<< HEAD
+<<<<<<< HEAD
         <option value="$PROJECT_DIR$/PC/postprocessing/postprocessing.py" />
         <option value="$PROJECT_DIR$/PC/planning/strategies.py" />
         <option value="$PROJECT_DIR$/PC/vision/tracker.py" />
@@ -211,6 +252,11 @@
         <option value="$PROJECT_DIR$/PC/postprocessing/postprocessing.py" />
         <option value="$PROJECT_DIR$/PC/planning/strategies.py" />
 >>>>>>> fixes
+=======
+        <option value="$PROJECT_DIR$/PC/controller.py" />
+        <option value="$PROJECT_DIR$/PC/postprocessing/postprocessing.py" />
+        <option value="$PROJECT_DIR$/PC/planning/strategies.py" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       </list>
     </option>
   </component>
@@ -219,6 +265,7 @@
     <option name="width" value="1280" />
     <option name="height" value="973" />
   </component>
+<<<<<<< HEAD
 <<<<<<< HEAD
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -250,6 +297,8 @@
   </component>
 =======
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
     <OptionsSetting value="true" id="Remove" />
@@ -274,9 +323,13 @@
     </navigator>
     <panes>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       <pane id="Scope" />
 >>>>>>> fixes
+=======
+      <pane id="Scope" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -424,9 +477,12 @@
         </subPane>
       </pane>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <pane id="Scope" />
 =======
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -629,22 +685,29 @@
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1280" height="973" extended-state="0" />
 <<<<<<< HEAD
+<<<<<<< HEAD
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290398" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19123507" sideWeight="0.4939759" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3282353" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <editor active="false" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290398" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19123507" sideWeight="0.49569708" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290398" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32914287" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290398" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+<<<<<<< HEAD
 <<<<<<< HEAD
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3164706" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -652,12 +715,17 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19123507" sideWeight="0.5060241" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3035294" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.3164706" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3290398" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.19123507" sideWeight="0.5043029" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.30444965" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -696,6 +764,7 @@
           <option name="timeStamp" value="14" />
         </line-breakpoint>
 <<<<<<< HEAD
+<<<<<<< HEAD
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/PC/vision/tracker.py</url>
           <line>291</line>
@@ -708,6 +777,8 @@
         </line-breakpoint>
 =======
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -720,16 +791,23 @@
         </breakpoint>
       </default-breakpoints>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <option name="time" value="20" />
 =======
       <option name="time" value="16" />
 >>>>>>> fixes
+=======
+      <option name="time" value="16" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <entry file="file://$PROJECT_DIR$/PC/preprocessing/preprocessing.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="582" max-vertical-offset="1080">
@@ -738,7 +816,10 @@
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="29574" max-vertical-offset="40122">
@@ -1056,6 +1137,7 @@
       </provider>
     </entry>
 <<<<<<< HEAD
+<<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/PC/vision/vision.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="276" max-vertical-offset="9648">
@@ -1071,6 +1153,8 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="888" max-vertical-offset="3222">
           <caret line="168" column="35" selection-start-line="168" selection-start-column="35" selection-end-line="168" selection-end-column="35" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <entry file="file://$PROJECT_DIR$/PC/planning/strategies_super.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3222">
@@ -1083,7 +1167,10 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="258" max-vertical-offset="5868">
           <caret line="49" column="58" selection-start-line="49" selection-start-column="58" selection-end-line="49" selection-end-column="58" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
           <folding />
         </state>
       </provider>
@@ -1091,18 +1178,24 @@
     <entry file="file://$PROJECT_DIR$/PC/postprocessing/postprocessing.py">
       <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1602">
           <caret line="42" column="61" selection-start-line="42" selection-start-column="61" selection-end-line="42" selection-end-column="61" />
 =======
         <state vertical-scroll-proportion="-8.8" vertical-offset="510" max-vertical-offset="1602">
           <caret line="43" column="61" selection-start-line="43" selection-start-column="61" selection-end-line="43" selection-end-column="61" />
 >>>>>>> fixes
+=======
+        <state vertical-scroll-proportion="-8.8" vertical-offset="510" max-vertical-offset="1602">
+          <caret line="43" column="61" selection-start-line="43" selection-start-column="61" selection-end-line="43" selection-end-column="61" />
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
           <folding>
             <element signature="e#0#34#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
 <<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/PC/planning/planner.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1121,6 +1214,8 @@
           <folding>
             <element signature="e#0#11#0" expanded="true" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <entry file="file://$PROJECT_DIR$/PC/vision/vision.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="4878" max-vertical-offset="9504">
@@ -1135,11 +1230,15 @@
           <caret line="48" column="14" selection-start-line="48" selection-start-column="14" selection-end-line="48" selection-end-column="14" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
 <<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/PC/vision/tracker.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1148,17 +1247,23 @@
           <folding>
             <element signature="e#0#10#0" expanded="true" />
 =======
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
     <entry file="file://$PROJECT_DIR$/PC/planning/strategies.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.0" vertical-offset="4320" max-vertical-offset="4986">
           <caret line="56" column="17" selection-start-line="56" selection-start-column="17" selection-end-line="56" selection-end-column="17" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
+<<<<<<< HEAD
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
           </folding>
         </state>
       </provider>
     </entry>
+<<<<<<< HEAD
 <<<<<<< HEAD
     <entry file="file://$PROJECT_DIR$/PC/controller.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -1170,5 +1275,7 @@
     </entry>
 =======
 >>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
   </component>
 </project>

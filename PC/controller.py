@@ -265,7 +265,6 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'drive_slow':
 
 			comm.drive(slow_speed, slow_speed+1) #new actions for higher degree of turning/movement choices
-
 		elif action == 'curve_left':
 
 			comm.drive(turn_speed, slow_speed )

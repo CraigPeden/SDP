@@ -65,6 +65,15 @@ class DefenderGrab:
 
 			else:
 				return [('drive_slow', 0.2), ('stop', 0)]
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
+
+<<<<<<< HEAD
 class AttackerShoot(RobotStrategy):
 
 	def __init__(self, world):
@@ -140,6 +149,11 @@ class AttackerShoot(RobotStrategy):
 
 
 
+=======
+
+
+
+>>>>>>> bd32e3ccff83fdb762601215b327feb8b386bb68
 class DefenderIntercept:
 	def __init__(self, world):
 		self.world = world
@@ -157,10 +171,21 @@ class DefenderIntercept:
 		self.their_attacker = world.their_attacker
 
 
-	
+<<<<<<< HEAD
+=======
+
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
+
 
 
 	def pick_action(self):
+
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+	
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
 
 		if self.ball.y > 80 and self.ball.y < 215:
 			y=(self.ball.y+150)/2
@@ -181,9 +206,10 @@ class DefenderIntercept:
 >>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
-			print self.center_x, y
-			return self.calculate_motor_speed(distance, angle)
+		print self.center_x, y
+		return self.calculate_motor_speed(distance, angle)
 
+<<<<<<< HEAD
 		if self.ball.y > 80 and self.ball.y < 215:
 			y=(self.ball.y+150)/2
 		elif self.ball.y < 80:
@@ -194,6 +220,10 @@ class DefenderIntercept:
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 		print self.center_x, y
 		return self.calculate_motor_speed(distance, angle)
+
+>>>>>>> fixes
+=======
+>>>>>>> ded595319ab01ae37b2ef7edd789deacf01d3fd9
 
 
 	def calculate_motor_speed(self, distance, angle):
@@ -258,8 +288,13 @@ class DefenderPass:
 			angle_to_pass_point = self.our_defender.get_rotation_to_point(self.opp_max_x, self.opp_min_y)
 			
 
+<<<<<<< HEAD
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 
+=======
+		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
+		
+>>>>>>> bd32e3ccff83fdb762601215b327feb8b386bb68
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
