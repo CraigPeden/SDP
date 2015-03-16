@@ -1,6 +1,6 @@
 import math
 import time
-
+from strategies_super import RobotStrategy
 
 class DefenderGrab:
 	def __init__(self, world):
@@ -97,10 +97,10 @@ class AttackerShoot(RobotStrategy):
 		angle_to_goal = self.our_attacker.get_rotation_to_point(self.goal_x, self.goal_y)
 
 		if distance > 30:
-			return go_to(self.center_x, self.center_y)
+			return self.go_to(self.center_x, self.center_y)
 
 		elif abs(angle) > math.pi / 12:
-			return orient(self.goal_x, self.goal_y)
+			return self.orient(self.goal_x, self.goal_y)
 
 		elif distance < 30 and abs(angle_to_goal) < math.pi / 12:
 			self.our_attacker.catcher = 'open'
@@ -172,12 +172,9 @@ class DefenderIntercept:
 		print self.center_x, y
 		return self.calculate_motor_speed(distance, angle)
 
-		else:
-			y=180
-
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
-			print self.center_x, y
-			return self.calculate_motor_speed(distance, angle)
+		print self.center_x, y
+		return self.calculate_motor_speed(distance, angle)
 
 		if self.ball.y > 80 and self.ball.y < 215:
 			y=(self.ball.y+150)/2
