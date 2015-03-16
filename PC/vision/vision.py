@@ -130,7 +130,7 @@ class Vision:
         the height of the robot, the height of the camera and the distance of the point
         from the center of the lens.
         """
-        plane_height = 250.0
+        plane_height = 1500.0
         robot_height = 20.0
         coefficient = robot_height / plane_height  #""" this is why the dots are slightly offset """
 
