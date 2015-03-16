@@ -46,7 +46,7 @@ class Planner:
 
 		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and our_defender.has_ball(ball) == False:
 			print 'DefenderGrab'
-			self._world.our_defender.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 8}           
+			self._world.our_defender.catcher_area = {'width' : 25, 'height' : 22, 'front_offset' : 10}           
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 

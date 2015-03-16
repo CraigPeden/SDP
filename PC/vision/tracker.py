@@ -188,7 +188,7 @@ class RobotTracker(Tracker):
 
     def get_dot(self, frame, x_offset, y_offset):
         """
-         Find center point of the black dot on the plate.
+        Find center point of the black dot on the plate.
 
         Method:
             1. Assume that the dot is within some proximity of the center of the plate.
@@ -201,64 +201,27 @@ class RobotTracker(Tracker):
             x_offset    The offset from the uncropped image - to be added to the final values
             y_offset    The offset from the uncropped image - to be added to the final values
         """
-
-
         # Create dummy mask
         height, width, channel = frame.shape
         if height > 0 and width > 0:
-            temp = cv2.GaussianBlur(frame.copy(), (5, 5), 0)
-            #cv2.cv.SaveImage("test_col.jpg", cv2.cv.fromarray(temp))
+            mask_frame = frame.copy()
 
-            gray = cv2.cvtColor(temp, cv2.COLOR_BGR2GRAY)
-            #cv2.cv.SaveImage("test_gray.jpg", cv2.cv.fromarray(gray))
+            # Fill the dummy frame
+            cv2.rectangle(mask_frame, (0, 0), (width, height), (0, 0, 0), -1)
+            cv2.circle(mask_frame, (width / 2, height / 2), 9, (255, 255, 255), -1)
 
-            thresh1 = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
-                                            cv2.THRESH_BINARY_INV, 11, 2)
+            # Mask the original image
+            mask_frame = cv2.cvtColor(mask_frame, cv2.COLOR_BGR2GRAY)
+            frame = cv2.bitwise_and(frame, frame, mask=mask_frame)
 
-            #cv2.cv.SaveImage("test.jpg", cv2.cv.fromarray(thresh1))
-
-            contours, hi = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-            contours_temp = [(c, cv2.contourArea(c)) for c in contours if 20 < cv2.contourArea(c) < 60]
-
-            contours = []
-
-            for cnt in contours_temp:
-                (x, y), radius = cv2.minEnclosingCircle(cnt[0])
-                diffs = 0
-                lengths = []
-                total = 0
-                for c in cnt[0]:
-                    diffs += (radius - self.distance(c[0], (x, y)))**2
-
-                contours.append((cnt[0], diffs))
-
-            contours.sort(key=lambda tup: tup[1])
-            # contours.reverse()
-
-            #thresh1 = cv2.GaussianBlur(thresh1,(5,5),0)
-
-            #circles = cv2.HoughCircles(thresh1, cv2.cv.CV_HOUGH_GRADIENT, 1, 5,
-            #                param1=5,param2=3,minRadius=0,maxRadius=30)
-            #circles = np.round(circles[0, :]).astype("int")
-            #for (x, y, r) in circles:
-            #    cv2.circle(frame, (x, y), r, (0, 255, 0), 1)
-
-            #print len(contours)
+            adjustment = self.calibration['dot']
+            contours = self.get_contours(frame, adjustment)
 
             if contours and len(contours) > 0:
-                #cv2.drawContours(frame, [contours[0][0]], -1, (0, 255, 0), 1)
-
-                #cv2.cv.SaveImage("test_col_cnt.jpg", cv2.cv.fromarray(frame))
-                (x, y), radius = self.get_contour_centre(contours[0][0])
+                # Take the largest contour
+                contour = self.get_largest_contour(contours)
+                (x, y), radius = self.get_contour_centre(contour)
                 return Center(x + x_offset, y + y_offset)
-
-
-        return None
-    
-    def distance(self, P1, P2):
-        return np.sqrt((P1[0] - P2[0]) ** 2 + (P1[1] - P2[1]) ** 2)
-
 
     def find(self, frame, queue):
         """
