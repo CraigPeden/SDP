@@ -40,6 +40,12 @@ int simpleKick = 500;
 int simpleRetract = 500;
 int kickerSleep = 100;
 
+/* IR setup */
+int IRemitter = 9;
+int IRpin = A1;
+boolean IRflag = false;
+unsigned long IRTime = millis();
+
 long readVcc() {
   long result;
   // Read 1.1V reference against AVcc
@@ -55,9 +61,12 @@ long readVcc() {
 
 void setup()
 {
+  Serial.begin(9600);
   SDPsetup();
   Serial.println("Robot started"); 
   Serial.println( readVcc(), DEC );
+  pinMode(IRemitter,OUTPUT);
+  digitalWrite(IRemitter,LOW);
 }
 
 int getArg(byte msg)
@@ -113,6 +122,10 @@ void controlKicker(int value)
     kickerTime = millis() + simpleRetract;
     kickerState = 3;
     motorForward(2,100);
+  }
+  else if(value == 5)
+  {
+    checkHasBall();
   }
 }
 
@@ -175,6 +188,30 @@ void loop()
     grabberAction = false;
     motorStop(3);
   }
+  
+  /* Check for ball */
+  if (IRflag && (IRTime < millis()))
+  {
+    hasBall();
+  }
+}
+
+void checkHasBall() {
+  digitalWrite(IRemitter,HIGH);
+  IRflag = true;
+  IRTime = millis() + 100;
+}
+
+void hasBall(){
+  IRflag = false;
+  int out = analogRead(IRpin);
+  if (out < 100)
+    Serial.write(0);
+   else
+     Serial.write(1);
+     
+  Serial.println(out);
+  digitalWrite(IRemitter,LOW);
 }
 
 void serialEvent() {

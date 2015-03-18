@@ -26,7 +26,7 @@ class Communication(object):
     3 | Kicker 			  | Arguments = 1 to fire 	    |
     """
 
-    def __init__(self, port, baudrate=115200, simulator=False):
+    def __init__(self, port, baudrate=9600, simulator=False):
 
         if simulator:
             self.use_simulator = True
@@ -100,6 +100,13 @@ class Communication(object):
             The kicker simply retracts.
         """
         self.write(self.kicker, 4)
+
+    def checkHasBall(self, timeout=0.2):
+        """
+            Check if the robot has the ball.
+        """
+        self.write(self.kicker, 5)
+        return self.read(timeout)
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:
