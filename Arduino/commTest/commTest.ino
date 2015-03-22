@@ -206,11 +206,17 @@ void hasBall(){
   IRflag = false;
   int out = analogRead(IRpin);
   if (out < 100)
+  {
     Serial.write(0);
-   else
+    Serial.println("OFF");
+  } else
+  {
      Serial.write(1);
-     
+     Serial.println("ON");
+  }
+  
   Serial.println(out);
+     
   digitalWrite(IRemitter,LOW);
 }
 

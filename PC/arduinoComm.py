@@ -73,6 +73,8 @@ class Communication(object):
                 out.append(self.ser.read())
 
                 if len(out) == buffer_size:
+                    print "Heya", int((out[1]).encode('hex'), 16)
+                    #self.ser.flushInput()
                     return out
 
         raise Exception("Read timed out")
@@ -106,7 +108,7 @@ class Communication(object):
             Check if the robot has the ball.
         """
         self.write(self.kicker, 5)
-        return self.read(timeout)
+        return int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:
