@@ -21,6 +21,7 @@ stdscr.addstr(6,0,"X          : grabberDown")
 stdscr.addstr(7,0,"C          : grabberUp")
 stdscr.addstr(8,0,"V          : kick")
 stdscr.addstr(9,0,"B          : hasBall")
+stdscr.addstr(10,0,"N          : grab")
 
 stdscr.addstr(12,0,"         ")
 stdscr.refresh()
@@ -72,6 +73,10 @@ while key != ord('q') and key != ord('Q'):
                 stdscr.addstr(14, 0, "Don't have ball.")
         except:
             stdscr.addstr(14, 0, "                ")
+
+    if key == ord('n'):
+        stdscr.addstr(12, 0, "GRAB     ")
+        comms.grab();
 
     stdscr.refresh()
 

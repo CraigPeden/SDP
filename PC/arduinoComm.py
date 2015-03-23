@@ -110,6 +110,9 @@ class Communication(object):
         self.write(self.kicker, 5)
         return int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
 
+    def grab(self):
+        self.write(self.kicker, 6)
+
     def rotation(self, angle):
         if angle > 14 or angle < 0:
             raise Exception("Rotation angle out of range")

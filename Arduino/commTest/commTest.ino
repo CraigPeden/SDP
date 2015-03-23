@@ -39,32 +39,34 @@ int kickerRetract = 180;
 int simpleKick = 500;
 int simpleRetract = 500;
 int kickerSleep = 100;
+boolean grab = false;
 
 /* IR setup */
 int IRemitter = 9;
-int IRpin = A1;
-boolean IRflag = false;
-unsigned long IRTime = millis();
+int IRreceiver = A1;
+byte IRbuffer = 0;
+unsigned long IRtimer = millis();
+boolean IRtoggle = false;
 
-long readVcc() {
-  long result;
-  // Read 1.1V reference against AVcc
-  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
-  delay(2); // Wait for Vref to settle
-  ADCSRA |= _BV(ADSC); // Convert
-  while (bit_is_set(ADCSRA,ADSC));
-  result = ADCL;
-  result |= ADCH<<8;
-  result = 1126400L / result; // Back-calculate AVcc in mV
-  return result;
-}
+//long readVcc() {
+//  long result;
+//  // Read 1.1V reference against AVcc
+//  ADMUX = _BV(REFS0) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1);
+//  delay(2); // Wait for Vref to settle
+//  ADCSRA |= _BV(ADSC); // Convert
+//  while (bit_is_set(ADCSRA,ADSC));
+//  result = ADCL;
+//  result |= ADCH<<8;
+//  result = 1126400L / result; // Back-calculate AVcc in mV
+//  return result;
+//}
 
 void setup()
 {
   Serial.begin(9600);
   SDPsetup();
   Serial.println("Robot started"); 
-  Serial.println( readVcc(), DEC );
+//  Serial.println( readVcc(), DEC );
   pinMode(IRemitter,OUTPUT);
   digitalWrite(IRemitter,LOW);
 }
@@ -123,9 +125,15 @@ void controlKicker(int value)
     kickerState = 3;
     motorForward(2,100);
   }
-  else if(value == 5)
+    else if (value == 5)
   {
-    checkHasBall();
+    // Has ball?
+    Serial.write(!IRbuffer);
+  }
+    else if(value == 6)
+  {
+    // Grab when IR is blocked.
+    grab = true;
   }
 }
 
@@ -189,35 +197,33 @@ void loop()
     motorStop(3);
   }
   
-  /* Check for ball */
-  if (IRflag && (IRTime < millis()))
-  {
-    hasBall();
-  }
-}
-
-void checkHasBall() {
-  digitalWrite(IRemitter,HIGH);
-  IRflag = true;
-  IRTime = millis() + 100;
-}
-
-void hasBall(){
-  IRflag = false;
-  int out = analogRead(IRpin);
-  if (out < 100)
-  {
-    Serial.write(0);
-    Serial.println("OFF");
-  } else
-  {
-     Serial.write(1);
-     Serial.println("ON");
+  if (grab && !IRbuffer) {
+    grab = false;
+    controlKicker(0);
   }
   
-  Serial.println(out);
-     
-  digitalWrite(IRemitter,LOW);
+  /* Update IR */
+  if (IRtimer + 10 < millis()) {
+    IRtimer = millis();
+    
+    if (IRtoggle) {
+      IRbuffer += readIR();
+      IRbuffer <<= 1;
+    } else {
+      readIR();
+    }
+  }
+}
+
+int readIR(){
+  int out = analogRead(IRreceiver);  // storing IR coming from the obstacle
+
+  // toggle to reset the transistors value.
+  IRtoggle = !IRtoggle;
+  digitalWrite(IRemitter,IRtoggle);
+  
+  // possitive if IR connection
+  return out < 100;
 }
 
 void serialEvent() {
