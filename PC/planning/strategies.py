@@ -87,20 +87,47 @@ class DefenderIntercept:
 		self.their_attacker = world.their_attacker
 
 
+
+	def predict_y_intersection(self, world, predict_for_x, robot):
+		
+		x = robot.x
+		y = robot.y
+		print x, y
+		top_y = world.our_goal.y + (world.our_goal.width/2)
+		bottom_y = world.our_goal.y - (world.our_goal.width/2) + 15
+		angle = robot.angle
+		if (robot.x < predict_for_x and not (math.pi/2 < angle < 3*math.pi/2)) or (robot.x > predict_for_x and (3*math.pi/2 > angle > math.pi/2)):
+			predicted_y = (y + math.tan(angle) * (predict_for_x - x))
+		# Correcting the y coordinate to the closest y coordinate on the goal line:
+			if predicted_y > top_y:
+				return (top_y + robot.y)/2
+			elif predicted_y < bottom_y:
+				return (bottom_y + robot.y)/2
+			return predicted_y
+		else:
+			return None
+
+
 	
 
 
 	def pick_action(self):
 
 
-	
+		self.predicted_y_intersecton = self.predict_y_intersection(self.world, self.center_x, self.their_attacker)
+		
+		if self.predicted_y_intersecton == None:
+			if self.ball.y > 80 and self.ball.y < 215:
+				y=(self.ball.y+150)/2
+			elif self.ball.y < 80:
+				y=95
+			else: 
+				y=180
+		else:
+			print 'Predicting Intersection'
+			y = self.predicted_y_intersecton
 
-		if self.ball.y > 80 and self.ball.y < 215:
-			y=(self.ball.y+150)/2
-		elif self.ball.y < 80:
-			y=95
-		else: 
-			y=180	
+	
 			
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 		print self.center_x, y
