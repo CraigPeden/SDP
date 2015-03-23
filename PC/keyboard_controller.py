@@ -20,8 +20,8 @@ stdscr.addstr(5,0,"SPACE      : stop")
 stdscr.addstr(6,0,"X          : grabberDown")
 stdscr.addstr(7,0,"C          : grabberUp")
 stdscr.addstr(8,0,"V          : kick")
-stdscr.addstr(9,0,"B          : kickerKick")
-stdscr.addstr(10,0,"N          : kickerRetract")
+stdscr.addstr(9,0,"B          : hasBall")
+stdscr.addstr(10,0,"N          : grab")
 
 stdscr.addstr(12,0,"         ")
 stdscr.refresh()
@@ -64,13 +64,20 @@ while key != ord('q') and key != ord('Q'):
         comms.kick()
 
     if key == ord('b'):
-        stdscr.addstr(12, 0, "KICK KICK")
-        comms.kickerKick()
+        stdscr.addstr(12, 0, "HAS BALL ")
+        stdscr.refresh()
+        try:
+            if comms.checkHasBall():
+                stdscr.addstr(14, 0, "Ball grabbed!   ")
+            else:
+                stdscr.addstr(14, 0, "Don't have ball.")
+        except:
+            stdscr.addstr(14, 0, "                ")
 
     if key == ord('n'):
-        stdscr.addstr(12, 0, "RETRACT  ")
-        comms.kickerRetract()
-        
+        stdscr.addstr(12, 0, "GRAB     ")
+        comms.grab();
+
     stdscr.refresh()
 
 curses.endwin()
