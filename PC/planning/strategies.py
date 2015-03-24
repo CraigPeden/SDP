@@ -144,15 +144,24 @@ class DefenderIntercept:
 
 	def calculate_motor_speed(self, distance, angle):
 		angle_thresh = math.pi / 4
-		direction_threshhold = math.pi/7
+		direction_threshhold = math.pi/6
 		distance_threshhold = 30
+		angle_align = self.our_defender.get_rotation_to_point(self.our_defender.x, self.max_y) 
+
 
 		if not (distance is None):
 
 			
 
 			if distance < distance_threshhold:
-				return 'stop'
+				if abs(angle_align) < math.pi/12: 
+					return 'stop'
+				else:
+					if angle_align > 0:
+						return 'turn_left_slow'
+					elif angle_align < 0:
+						return 'turn_right_slow'
+
 
 			elif math.pi - abs(angle) < direction_threshhold:
 				return 'backwards_intercept' 		
@@ -266,9 +275,9 @@ class DefenderSave:
 		top_y = self.world.our_goal.y + (self.world.our_goal.width/2)
 		bottom_y = self.world.our_goal.y - (self.world.our_goal.width/2) 
 		if self.our_side == 'left':
-			fixed_x = self.min_x + 35
+			fixed_x = self.min_x + 10
 		else:
-			fixed_x =  self.max_x - 35
+			fixed_x =  self.max_x - 10
 
 		if self.ball.y > self.center_y:
 			fixed_y = bottom_y
