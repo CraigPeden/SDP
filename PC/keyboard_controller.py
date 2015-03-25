@@ -1,9 +1,10 @@
 import arduinoComm
 import time
 import curses
+import sys
 
 # Initializing the object which will handle communications
-comms = arduinoComm.Communication("/dev/ttyACM0", 9600)
+comms = arduinoComm.Communication(sys.argv[1] if len(sys.argv) > 1 else "/dev/ttyACM0", 9600)
 
 # Initializing the screen
 stdscr = curses.initscr()

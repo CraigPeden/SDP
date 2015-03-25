@@ -65,7 +65,7 @@ void setup()
 {
   Serial.begin(9600);
   SDPsetup();
-  Serial.println("Robot started"); 
+  Serial.println("Robot started");
 //  Serial.println( readVcc(), DEC );
   pinMode(IRemitter,OUTPUT);
   digitalWrite(IRemitter,LOW);
@@ -161,8 +161,16 @@ void controlMotor(int motor, byte msg)
   }
 }
 
+unsigned long printTimer = millis();
+
 void loop()
 {  
+  if (printTimer + 1000 < millis()) {
+    printTimer = millis();
+    
+    Serial.println(IRbuffer);
+  }
+  
   /* If the kicker flag kickerAction is set,
   check if the time is reached. */
   if(kickerState != 0 && (kickerTime < millis()))
@@ -218,6 +226,7 @@ void loop()
 int readIR(){
   int out = analogRead(IRreceiver);  // storing IR coming from the obstacle
 
+  //Serial.println(out);
   // toggle to reset the transistors value.
   IRtoggle = !IRtoggle;
   digitalWrite(IRemitter,IRtoggle);

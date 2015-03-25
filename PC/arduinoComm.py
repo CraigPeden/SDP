@@ -73,7 +73,7 @@ class Communication(object):
                 out.append(self.ser.read())
 
                 if len(out) == buffer_size:
-                    print "Heya", int((out[1]).encode('hex'), 16)
+                    print ord(out[1]), " ", out[1]
                     #self.ser.flushInput()
                     return out
 
@@ -108,7 +108,13 @@ class Communication(object):
             Check if the robot has the ball.
         """
         self.write(self.kicker, 5)
-        return int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
+
+        try:    
+            out = int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
+        except Exception:
+            out = False
+
+        return out
 
     def grab(self):
         self.write(self.kicker, 6)
