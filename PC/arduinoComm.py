@@ -26,7 +26,7 @@ class Communication(object):
     3 | Kicker 			  | Arguments = 1 to fire 	    |
     """
 
-    def __init__(self, port, baudrate=115200, simulator=False):
+    def __init__(self, port, baudrate=9600, simulator=False):
 
         if simulator:
             self.use_simulator = True
@@ -73,6 +73,8 @@ class Communication(object):
                 out.append(self.ser.read())
 
                 if len(out) == buffer_size:
+                    print "Heya", int((out[1]).encode('hex'), 16)
+                    #self.ser.flushInput()
                     return out
 
         raise Exception("Read timed out")
@@ -100,6 +102,16 @@ class Communication(object):
             The kicker simply retracts.
         """
         self.write(self.kicker, 4)
+
+    def checkHasBall(self, timeout=0.2):
+        """
+            Check if the robot has the ball.
+        """
+        self.write(self.kicker, 5)
+        return int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
+
+    def grab(self):
+        self.write(self.kicker, 6)
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:

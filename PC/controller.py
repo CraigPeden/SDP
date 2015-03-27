@@ -234,11 +234,11 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'turn_left_slow':
 
 		  
-			comm.drive(-turn_speed_slow, turn_speed_slow)
+			comm.drive(-turn_speed_slow, turn_speed_slow+1)
 
 		elif action == 'turn_right_slow':
 		  
-			comm.drive(turn_speed_slow, -turn_speed_slow)
+			comm.drive(turn_speed_slow, -turn_speed_slow-1)
 
 		elif action == 'turn_left_aiming':
 
@@ -251,17 +251,18 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'backwards':
 		  
-			comm.drive(-slow_speed, -slow_speed)
+			comm.drive(-slow_speed, -slow_speed-2)
+
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-fast_speed, -fast_speed-1)	
+			comm.drive(-fast_speed, -fast_speed-2)	
 
 		elif action == 'drive':
 		  
 			comm.drive(fast_speed, fast_speed+1)
 		elif action == 'drive_intercept':
 		  
-			comm.drive(fast_speed, fast_speed+1)	
+			comm.drive(fast_speed-1, fast_speed)	
 		elif action == 'drive_slow':
 		  
 			comm.drive(slow_speed, slow_speed+1)
