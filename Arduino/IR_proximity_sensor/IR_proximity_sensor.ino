@@ -7,7 +7,7 @@ boolean IRtoggle = false;
 byte IRbuffer = 0;
 
 void setup(){
-  Serial.begin(9600);         // initializing Serial monitor
+  //Serial.begin(9600);         // initializing Serial monitor
   pinMode(IRemitter,OUTPUT);  // IR emitter LED on digital pin 2
   pinMode(LEDpin,OUTPUT);  // IR emitter LED on digital pin 2
   digitalWrite(LEDpin, LOW);
@@ -40,9 +40,8 @@ void loop(){
 int readIR(){
   int out = analogRead(IRpin);  // storing IR coming from the obstacle
   
-  Serial.println(out);
-  // toggle to reset the transistors value.
-  
+  //Serial.println(out);
+  // toggle to reset the transistors value
   IRtoggle = !IRtoggle;
   digitalWrite(IRemitter,IRtoggle);
   
