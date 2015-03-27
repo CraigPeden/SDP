@@ -16,7 +16,7 @@ class Planner:
 
 			
 
-		self.defender_intercept_strategy= DefenderIntercept(self._world)
+		self.defender_intercept_strategy= DefenderIntercept(self._world, our_side)
 		self.defender_grab_strategy= DefenderGrab(self._world)
 		self.defender_save_strategy= DefenderSave(self._world, our_side)
 		self.defender_pass_strategy= DefenderPass(self._world, our_side, pitch_num)
@@ -40,12 +40,11 @@ class Planner:
 			fixed_x = max_x	
 		
 		self.center_y = (max_y + min_y)/2
-		print fixed_x
-		print abs(ball.x - fixed_x)
-		print abs(our_defender.x - fixed_x) 
+		top_y = self._world.our_goal.y + (self._world.our_goal.width/2)
+		bottom_y = self._world.our_goal.y - (self._world.our_goal.width/2)
 
 		print ""
-		if self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) == True and abs(ball.x - fixed_x) < 40 and abs(our_defender.x - fixed_x) > 40 and ((self.center_y > our_defender.y and self.center_y > ball.y ) or (self.center_y < our_defender.y and self.center_y < ball.y )) :
+		if (ball.y > bottom_y) and (ball.y > top_y) and self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) == True and abs(ball.x - fixed_x) < 30 and abs(our_defender.x - fixed_x) > 40 and ((self.center_y > our_defender.y and self.center_y > ball.y ) or (self.center_y < our_defender.y and self.center_y < ball.y )) :
 			print 'DefenderSave'
 			self._robot_current_strategy = self.defender_save_strategy
 			return self._robot_current_strategy.pick_action() 
@@ -62,7 +61,7 @@ class Planner:
 
 		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and our_defender.has_ball(ball) == False:
 			print 'DefenderGrab'
-			self._world.our_defender.catcher_area = {'width' : 25, 'height' : 25, 'front_offset' : 10}           
+			self._world.our_defender.catcher_area = {'width' : 30, 'height' : 27, 'front_offset' : 10}           
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 

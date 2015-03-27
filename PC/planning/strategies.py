@@ -33,7 +33,7 @@ class DefenderGrab:
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
 
 			self.our_defender.catcher = 'closed'
-			return [('grab', 0.5), ('backwards', 2)]	
+			return [('stop', 0), ('grab', 2), ('backwards', 1.5)]	
 
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
 
@@ -47,18 +47,16 @@ class DefenderGrab:
 
 		elif not (distance is None):
 
-
-			if abs(angle) > math.pi / 9:
-				if abs(angle) > math.pi / 4:
-					if angle > 0:
-						return [('turn_left', 0.2), ('stop', 0)]
-					elif angle < 0:
-						return [('turn_right', 0.2), ('stop', 0)]
-				else:
-					if angle > 0:
-						return [('turn_left', 0.2), ('stop', 0)]
-					elif angle < 0:
-						return [('turn_right', 0.2), ('stop', 0)]
+			if distance < 20:
+				if angle > 0:
+					return [('turn_left', 0.1), ('stop', 0)]
+				elif angle < 0:
+					return [('turn_right', 0.1), ('stop', 0)]		
+			if abs(angle) > math.pi / 12:
+				if angle > 0:
+					return [('turn_left', 0.2), ('stop', 0)]
+				elif angle < 0:
+					return [('turn_right', 0.2), ('stop', 0)]
 
 			elif distance > 120:
 				return 'drive'
@@ -71,16 +69,21 @@ class DefenderGrab:
 
 
 class DefenderIntercept:
-	def __init__(self, world):
+	def __init__(self, world, our_side):
 		self.world = world
+		self.our_side = our_side
+		self.zone = world._pitch._zones[self.world.our_defender.zone]
+		min_x, max_x, min_y, self.max_y = self.zone.boundingBox()
+
+		if self.our_side == 'left':
+			self.center_x = ((min_x+max_x)/2) -10
+		else:
+			self.center_x = ((min_x+max_x)/2) +10	
 
 		self.DISTANCE_THRESH = 15
 		self.ANGLE_THRESH = math.pi / 12
 
 		self.ball = world.ball
-		self.zone = world._pitch._zones[self.world.our_defender.zone]
-		min_x, max_x, min_y, self.max_y = self.zone.boundingBox()
-		self.center_x = (min_x + max_x) / 2
 		self.our_defender = world.our_defender
 		self.our_attacker = world.our_attacker
 		self.their_defender = world.their_defender
@@ -93,7 +96,7 @@ class DefenderIntercept:
 		x = robot.x
 		y = robot.y
 		print x, y
-		top_y = world.our_goal.y + (world.our_goal.width/2)
+		top_y = world.our_goal.y + (world.our_goal.width/2) - 15
 		bottom_y = world.our_goal.y - (world.our_goal.width/2) + 15
 		angle = robot.angle
 		if (robot.x < predict_for_x and not (math.pi/2 < angle < 3*math.pi/2)) or (robot.x > predict_for_x and (3*math.pi/2 > angle > math.pi/2)):
@@ -115,6 +118,7 @@ class DefenderIntercept:
 
 
 		self.predicted_y_intersecton = self.predict_y_intersection(self.world, self.center_x, self.their_attacker)
+		self.predicted_y_intersecton_other_defender = self.predict_y_intersection(self.world, self.center_x, self.their_defender)
 		
 		if self.ball.velocity > 3 :
 			top_y = self.world.our_goal.y + (self.world.our_goal.width/2)
@@ -130,6 +134,19 @@ class DefenderIntercept:
 				y=95
 			else: 
 				y=180
+
+		elif self.predicted_y_intersecton_other_defender == None and self.world.pitch.zones[self.their_defender.zone].isInside(self.ball.x, self.ball.y) == True:
+			if self.ball.y > 80 and self.ball.y < 215:
+				y=(self.ball.y+150)/2
+			elif self.ball.y < 80:
+				y=95
+			else: 
+				y=180
+
+		elif self.world.pitch.zones[self.their_defender.zone].isInside(self.ball.x, self.ball.y) == True:
+			print 'Predicting Intersection'
+			y = self.predicted_y_intersecton_other_defender
+		
 		else:
 			print 'Predicting Intersection'
 			y = self.predicted_y_intersecton
@@ -154,8 +171,13 @@ class DefenderIntercept:
 			
 
 			if distance < distance_threshhold:
-				if abs(angle_align) < math.pi/12: 
+				if abs(angle_align) < math.pi/15: 
 					return 'stop'
+				elif abs(angle_align) < math.pi/6:
+					if angle_align > 0:
+						return 'turn_left_aiming'
+					elif angle_align < 0:
+						return 'turn_right_aiming'
 				else:
 					if angle_align > 0:
 						return 'turn_left_slow'
@@ -245,10 +267,10 @@ class DefenderPass:
 		elif distance > 20 and abs(angle) < math.pi / 12:
 
 			return 'drive_slow'
-		elif distance > 20 and abs(angle) > 11 * math.pi / 12:
+		elif distance > 20 and abs(angle) >  math.pi / 2:
 			return 'backwards'
 
-		elif distance > 20 and abs(angle) > math.pi / 12:
+		elif distance > 20 and abs(angle) <  math.pi / 2:
 
 			if angle > 0:
 				return [('turn_left', 0.2), ('stop', 0.2)]
