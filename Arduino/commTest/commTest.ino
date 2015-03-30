@@ -34,8 +34,8 @@ boolean grabberAction = false;
 unsigned long grabberTime = millis();
 int grabberDown = 300;
 int grabberUp = 800;
-int kickerKick = 200;
-int kickerRetract = 180;
+int kickerKick = 220;
+int kickerRetract = 200;
 int simpleKick = 500;
 int simpleRetract = 500;
 int kickerSleep = 100;
@@ -146,19 +146,35 @@ void controlMotor(int motor, byte msg)
      motorStop(motor);
   }
   else
+//  {
+//    if(motorGear > 7)
+//    {
+//      motorGear = 15 - motorGear;
+//      int motorSpeed = 100 - ((motorGear * 100) / 7);
+//      motorBackward(motor, motorSpeed);
+//    }
+//    else
+//    {
+//      int motorSpeed = 100 - ((motorGear * 100) / 7);
+//      motorForward(motor, motorSpeed);
+//    }
+//  }
   {
-    if(motorGear > 7)
+    if (motorGear > 8)
     {
-      motorGear = 15 - motorGear;
-      int motorSpeed = 100 - ((motorGear * 100) / 7);
+      motorGear -= 8;
+      int motorSpeed = 30 + 10 * motorGear;
       motorBackward(motor, motorSpeed);
     }
-    else    
+    else
     {
-      int motorSpeed = 100 - ((motorGear * 100) / 7);
+      motorGear = 7 - motorGear;
+      int motorSpeed = 30 + 10 * motorGear;
       motorForward(motor, motorSpeed);
     }
   }
+  
+  
 }
 
 //unsigned long printTimer = millis();
