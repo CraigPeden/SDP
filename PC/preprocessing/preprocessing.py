@@ -80,9 +80,10 @@ class Preprocessing(object):
 			self.write_json_avg(calibration, pitch)
 		elif self.options['calibrate_manual']:
 			calibration = {}
-			sectors = self.calibrate(pitch, frame)
-			sectors_values = np.array([self.get_avg(frame, 5, sec[0], sec[1]) for sec in sectors])
-			avg_overall = np.mean([[self.get_avg(frame, 8, sec[0], sec[1])] for sec in sectors], axis=0)
+			frame2 = frame.copy()
+			sectors = self.calibrate(pitch, frame2)
+			sectors_values = np.array([self.get_avg(frame2, 5, sec[0], sec[1]) for sec in sectors])
+			avg_overall = np.mean([[self.get_avg(frame2, 8, sec[0], sec[1])] for sec in sectors], axis=0)
 			calibration['avg'] = avg_overall[0].tolist()
 			calibration['sectors'] = sectors.tolist()
 			calibration['sectors_values'] = sectors_values.tolist()
