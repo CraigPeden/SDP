@@ -4,7 +4,7 @@ from vision import tools
 import json
 import os
 
-
+FRAME_NAME = 'ConfigureWindow'
 
 
 class Preprocessing(object):
@@ -24,7 +24,9 @@ class Preprocessing(object):
 
 		# Default setting for background subtractor
 		self.background_sub = None
-
+		self.FLAG = False
+		self.current_key = 0
+		self.data = np.array([[0,0]])
 	def get_options(self):
 		return self.options
 
@@ -64,9 +66,8 @@ class Preprocessing(object):
 		bounds = np.array([[zones[i][0], zones[i][1], 2 * height/3, height] for i in range(0, 4)])
 		bounds = np.append(bounds, np.array([[zones[i][0], zones[i][1], height / 3, 2 * height / 3] for i in range(0, 4)]), axis=0)
 		bounds = np.append(bounds, np.array([[zones[i][0], zones[i][1], 0, height / 3 ] for i in range(0, 4)]), axis=0)
-
-		if self.options['calibrate']:
-
+		if self.options['calibrate_auto']:
+			self.flag = False
 			mids = np.array([((zones[i][0] + zones[i][1]) / 2) for i in range(0, 4)])
 			sectors = np.array([[x_co, y_co] for y_co in y_points for x_co in mids ])
 			sectors_values = np.array([self.get_avg(frame, 5, sec[0], sec[1]) for sec in sectors])
@@ -77,15 +78,38 @@ class Preprocessing(object):
 			calibration['sectors'] = sectors.tolist()
 			calibration['sectors_values'] = sectors_values.tolist()
 			self.write_json_avg(calibration, pitch)
+		elif self.options['calibrate_manual']:
+			calibration = {}
+			sectors = self.calibrate(pitch, frame)
+			sectors_values = np.array([self.get_avg(frame, 5, sec[0], sec[1]) for sec in sectors])
+			avg_overall = np.mean([[self.get_avg(frame, 8, sec[0], sec[1])] for sec in sectors], axis=0)
+			calibration['avg'] = avg_overall[0].tolist()
+			calibration['sectors'] = sectors.tolist()
+			calibration['sectors_values'] = sectors_values.tolist()
+			self.write_json_avg(calibration, pitch)
 		else:
+			self.FLAG = False
 			calibration_get = self.get_json_calibration(pitch)
 			sectors = np.array(calibration_get['sectors'])
 			sectors_values = np.array(calibration_get['sectors_values'])
 			avg_overall = np.array(calibration_get['avg'])
 
-		for i in range(0, len(sectors)):
-			frame[bounds[i][2]:bounds[i][3], bounds[i][0]:bounds[i][1]] -= (sectors_values[i] - avg_overall)
 
+
+		# Mask the original image
+
+
+		prev_frame = frame.copy()
+		for i in range(0, len(sectors)):
+			color_sub = sectors_values - avg_overall
+			frame[bounds[i][2]:bounds[i][3], bounds[i][0]:bounds[i][1]] -= \
+				np.array([color_sub[i][0], color_sub[i][1], color_sub[i][2]])
+			mask_frame = cv2.absdiff(prev_frame, frame)
+			mask_frame = cv2.threshold(mask_frame, 20, 255, cv2.THRESH_BINARY)
+			mask_frame = cv2.cvtColor(mask_frame[1], cv2.COLOR_BGR2GRAY)
+			cv2.bitwise_and(frame, prev_frame, frame, mask=mask_frame)
+			#frame[bounds[i][2]:bounds[i][3], bounds[i][0]:bounds[i][1]] = normalized_sector
+		#cv2.bitwise_and(prev_frame, frame, frame - prev_frame)
 		return frame
 
 	def get_avg(self, frame, radius, xin, yin):
@@ -120,3 +144,49 @@ class Preprocessing(object):
 				calibration['pitch_0'] = self.get_json_calibration(0)
 		tools.write_json(self.path + filename, calibration)
 		return 0
+
+	def calibrate(self, pitch, image):
+		if self.FLAG is True:
+			return self.data
+		keys = np.array(['Zone_0', 'Zone_1', 'Zone_2', 'Zone_3'])
+		subkeys = np.array(['high', 'mid', 'low'])
+
+
+		frame = cv2.namedWindow(FRAME_NAME)
+
+		# Set callback
+		cv2.setMouseCallback(FRAME_NAME, self.draw)
+		print "Press any key to see your selection. Press q to accept \n (Note 'High' is the bottom of the image"
+		for key in keys:
+			for subkey in subkeys:
+				self.get_point(key + subkey, image)
+		self.FLAG = True
+		return self.data
+
+	def get_point(self, key, image):
+		k = True
+		print "Click on a peice of board in " + key
+		while k != ord('q'):
+			new_image = image.copy()
+
+			try:
+				color = (255, 0, 0)
+				for i in range(len(self.data)):
+					cv2.circle(new_image, (self.data[i][0],self.data[i][1]) , 2, color, -1)
+
+			except:
+				None
+
+			cv2.imshow(FRAME_NAME, new_image)
+			k = cv2.waitKey(0) & 0xFF
+
+		self.current_key += 1
+
+	def draw(self, event, x, y, flags, param):
+
+		if event == cv2.EVENT_LBUTTONDOWN:
+			if self.current_key == len(self.data) - 1:
+				self.data[self.current_key] = [x, y]
+			else:
+				self.data = np.append(self.data, [[x, y]], axis=0)
+

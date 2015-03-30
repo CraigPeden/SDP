@@ -80,7 +80,7 @@ class AttackerShoot(RobotStrategy):
 	# 	self.ball = self.world.ball
 	# 	zone = self.world._pitch._zones[self.world.our_attacker.zone]
 	# 	min_x, max_x, min_y, max_y = zone.boundingBox()
-	# 	self.goal_x = self.world.their_goal.x 
+	# 	self.goal_x = self.world.their_goal.x
 	# 	self.goal_y = self.world.their_goal.y + self.world.their_goal.height/2
 	# 	if self.world.our_side == 'left':
 	# 		self.center_x = 350
@@ -156,18 +156,54 @@ class DefenderIntercept:
 		self.their_attacker = world.their_attacker
 
 
+
+	def predict_y_intersection(self, world, predict_for_x, robot):
+		
+		x = robot.x
+		y = robot.y
+		print x, y
+		top_y = world.our_goal.y + (world.our_goal.width/2)
+		bottom_y = world.our_goal.y - (world.our_goal.width/2) + 15
+		angle = robot.angle
+		if (robot.x < predict_for_x and not (math.pi/2 < angle < 3*math.pi/2)) or (robot.x > predict_for_x and (3*math.pi/2 > angle > math.pi/2)):
+			predicted_y = (y + math.tan(angle) * (predict_for_x - x))
+		# Correcting the y coordinate to the closest y coordinate on the goal line:
+			if predicted_y > top_y:
+				return max((top_y + robot.y)/2, top_y)
+			elif predicted_y < bottom_y:
+				return min((bottom_y + robot.y)/2, bottom_y)
+			return predicted_y
+		else:
+			return None
+
+
 	
 
 
 	def pick_action(self):
 
-		if self.ball.y > 80 and self.ball.y < 215:
-			y=(self.ball.y+150)/2
-		elif self.ball.y < 80:
-			y=95
-		else: 
-			y=180	
-			
+
+		self.predicted_y_intersecton = self.predict_y_intersection(self.world, self.center_x, self.their_attacker)
+
+		if self.ball.velocity > 3 :
+			top_y = self.world.our_goal.y + (self.world.our_goal.width/2)
+			bottom_y = self.world.our_goal.y - (self.world.our_goal.width/2)
+			center_x = (top_y +bottom_y)/2
+			y = (self.ball.y + center_x)/2
+
+
+		elif self.predicted_y_intersecton == None:
+			if self.ball.y > 80 and self.ball.y < 215:
+				y=(self.ball.y+150)/2
+			elif self.ball.y < 80:
+				y=95
+			else:
+				y=180
+		else:
+			print 'Predicting Intersection'
+			y = self.predicted_y_intersecton
+
+
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, y)
 		print self.center_x, y
 		return self.calculate_motor_speed(distance, angle)
@@ -190,15 +226,24 @@ class DefenderIntercept:
 
 	def calculate_motor_speed(self, distance, angle):
 		angle_thresh = math.pi / 4
-		direction_threshhold = math.pi/7
+		direction_threshhold = math.pi/6
 		distance_threshhold = 30
+		angle_align = self.our_defender.get_rotation_to_point(self.our_defender.x, self.max_y)
+
 
 		if not (distance is None):
 
 
 
 			if distance < distance_threshhold:
-				return 'stop'
+				if abs(angle_align) < math.pi/12:
+					return 'stop'
+				else:
+					if angle_align > 0:
+						return 'turn_left_slow'
+					elif angle_align < 0:
+						return 'turn_right_slow'
+
 
 			elif math.pi - abs(angle) < direction_threshhold:
 				return 'backwards_intercept'
@@ -213,8 +258,10 @@ class DefenderIntercept:
 				return 'drive_intercept'
 
 class DefenderPass:
-	def __init__(self, world):
+	def __init__(self, world, our_side, pitch_num):
 		self.world = world
+		self.our_side = our_side
+		self.pitch_num = pitch_num
 
 		self.DISTANCE_THRESH = 15
 		self.ANGLE_THRESH = math.pi / 12
@@ -232,9 +279,13 @@ class DefenderPass:
 		self.their_attacker = self.world.their_attacker
 		self.ball = self.world.ball
 
-		self.opponent_zone = self.world._pitch._zones[self.world.our_attacker.zone]
+		self.opponent_zone = self.world._pitch._zones[self.world.their_attacker.zone]
 		self.opp_min_x, self.opp_max_x, self.opp_min_y, self.opp_max_y = self.opponent_zone.boundingBox()
-		self.opponent_x = (self.opp_max_x + self.opp_min_x)/2
+
+		if self.pitch_num == 0 and self.our_side == 'left':
+			self.opp_max_x = self.opp_max_x - 30
+			print 'Opponent max x:'
+			print self.opp_max_x
 
 
 
@@ -243,15 +294,15 @@ class DefenderPass:
 
 
 	def pick_action(self):
-		
+
 		if self.their_attacker.y < self.center_y:
 			angle_to_pass_point = self.our_defender.get_rotation_to_point(self.opp_max_x, self.opp_max_y)
 		else:
 			angle_to_pass_point = self.our_defender.get_rotation_to_point(self.opp_max_x, self.opp_min_y)
-			
+
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
-		
+
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
@@ -278,3 +329,63 @@ class DefenderPass:
 				return [('turn_left', 0.2), ('stop', 0.2)]
 			elif angle < 0:
 				return [('turn_right', 0.2), ('stop', 0.2)]
+
+
+
+
+class DefenderSave:
+	def __init__(self, world, our_side):
+		self.world = world
+		self.our_side = our_side
+
+		self.our_defender = self.world.our_defender
+		self.ball = self.world.ball
+		self.last_kicker_action = time.time()
+		self.zone = world._pitch._zones[self.world.our_defender.zone]
+		self.min_x, self.max_x, self.min_y, self.max_y = self.zone.boundingBox()
+		self.center_y = (self.max_y + self.min_y)/2
+
+
+	def pick_action(self):
+
+		top_y = self.world.our_goal.y + (self.world.our_goal.width/2)
+		bottom_y = self.world.our_goal.y - (self.world.our_goal.width/2) 
+		if self.our_side == 'left':
+			fixed_x = self.min_x + 10
+		else:
+			fixed_x =  self.max_x - 10
+
+		if self.ball.y > self.center_y:
+			fixed_y = bottom_y
+		else:
+			fixed_y = top_y	
+
+		print fixed_x, '  ',   fixed_y	
+				
+		distance, angle = self.our_defender.get_direction_to_point(fixed_x, fixed_y)
+		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Catcher closed:' + self.our_defender.catcher
+
+		if not (distance is None):
+
+
+			if abs(angle) > math.pi / 9:
+				if abs(angle) > math.pi / 4:
+					if angle > 0:
+						return [('turn_left', 0.2), ('stop', 0)]
+					elif angle < 0:
+						return [('turn_right', 0.2), ('stop', 0)]
+				else:
+					if angle > 0:
+						return [('turn_left', 0.2), ('stop', 0)]
+					elif angle < 0:
+						return [('turn_right', 0.2), ('stop', 0)]
+
+			elif distance > 120:
+				return 'drive'
+
+			else:
+				return [('drive_slow', 0.2), ('stop', 0)]
+
+
+

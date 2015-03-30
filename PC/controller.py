@@ -46,8 +46,11 @@ class Controller:
 
 
 		# Set up the Arduino communications
-
-		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		try:
+			self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		except:
+			print "Could not detect RF comm. Using terminal instead."
+			self.arduino = arduinoComm.Communication("/dev/pts/0", 9600)
 		time.sleep(2.5)
 		self.arduino.grabberUp()
 
@@ -252,9 +255,10 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'backwards':
 		  
 			comm.drive(-slow_speed, -slow_speed)
+
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-fast_speed, -fast_speed-1)	
+			comm.drive(-fast_speed, -fast_speed-2)	
 
 		elif action == 'drive':
 		  
