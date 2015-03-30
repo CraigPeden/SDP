@@ -159,7 +159,7 @@ class Preprocessing(object):
 		print "Press any key to see your selection. Press q to accept \n (Note 'High' is the bottom of the image"
 		for key in keys:
 			for subkey in subkeys:
-				self.get_point(key + subkey, image)
+				self.get_point(key + ' ' + subkey, image)
 		self.FLAG = True
 		return self.data
 
