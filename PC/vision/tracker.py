@@ -328,11 +328,6 @@ class RobotTracker(Tracker):
             # Offset the x coordinates
             plate_corners = [(p[0] + self.offset, p[1]) for p in plate_corners]
 
-            # update x and y
-            x = sum([p[0] for p in plate_corners])/len(plate_corners)
-            y = sum([p[1] for p in plate_corners])/len(plate_corners)
-
-
             if front is not None:
                 front = [(p[1] + self.offset, p[2]) for p in front]
 

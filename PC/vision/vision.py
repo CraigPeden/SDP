@@ -272,11 +272,12 @@ class Camera(object):
 
 
 class GUI(object):
-    VISION = 'SUCH VISION'
+    VISION = 'Team 8 Vision System'
     BG_SUB = 'BG Subtract'
     NORMALIZE = 'Normalize  '
     CALIBRATE = 'Calibrate Normalization'
-    COMMS = 'Communications on/off '
+    CATCHERAREA = 'Catcher Area'
+    SPEEDMUL = 'Speed Multiplier'
 
     def nothing(self, x):
         pass
@@ -287,19 +288,27 @@ class GUI(object):
         self.arduino = arduino
         self.pitch = pitch
         self.frame = None
+        self.speed_multiplier = 5
+        self.catcher_area_height = 25
         cv2.namedWindow(self.VISION)
 
         cv2.createTrackbar(self.BG_SUB, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.NORMALIZE, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.CALIBRATE, self.VISION, 0, 1, self.nothing)
-        cv2.createTrackbar(
-            self.COMMS, self.VISION, 1, 1, self.nothing)
+        cv2.createTrackbar(self.CATCHERAREA, self.VISION, self.catcher_area_height, 40, self.nothing)
+        cv2.createTrackbar(self.SPEEDMUL, self.VISION, self.speed_multiplier, 10, self.nothing)
 
         #cv2.setMouseCallback(self.VISION, self.get_hsv)
 
     def get_hsv(self, event, x, y, flags, param):
         hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-        print hsv[x][y]
+        #print hsv[x][y]
+
+    def getSpeedMultiplier(self):
+        return cv2.getTrackbarPos(self.SPEEDMUL, self.VISION)
+
+    def getCatcherArea(self):
+        return cv2.getTrackbarPos(self.CATCHERAREA, self.VISION)
 
     def to_info(self, args):
         """
