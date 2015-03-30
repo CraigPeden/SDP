@@ -6,9 +6,10 @@ from utilities import *
 
 class Planner:
 
-	def __init__(self, our_side, pitch_num, our_color):
+	def __init__(self, our_side, pitch_num, our_color, gui):
 		self._world = World(our_side, pitch_num)
-		self._world.our_defender.catcher_area = {'width' : 30, 'height' : 30, 'front_offset' : 10} 
+		self.gui = gui
+		self._world.our_defender.catcher_area = {'width' : 20, 'height' : self.gui.getCatcherArea(), 'front_offset' : 10} 
 		self._world.our_attacker.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 12} 
 		self._world.our_defender.catcher='open'
 		self.our_side = our_side
@@ -61,7 +62,7 @@ class Planner:
 
 		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and our_defender.has_ball(ball) == False:
 			print 'DefenderGrab'
-			self._world.our_defender.catcher_area = {'width' : 30, 'height' : 27, 'front_offset' : 10}           
+			self._world.our_defender.catcher_area = {'width' : 20, 'height' : self.gui.getCatcherArea(), 'front_offset' : 10}           
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 

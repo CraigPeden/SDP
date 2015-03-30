@@ -65,11 +65,11 @@ class Controller:
 		# Set up postprocessing for vision
 		self.postprocessing = Postprocessing()
 
-		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color)
-
 		# Set up GUI
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
+
+		# Set up main planner
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, gui=self.GUI)
 
 		self.color = color
 		self.side = our_side
@@ -78,7 +78,7 @@ class Controller:
 
 		self.preprocessing = Preprocessing()
 	#it doesn't matter whether it is an Attacker or a Defender Controller
-		self.controller = Attacker_Controller(self.planner._world)
+		self.controller = Attacker_Controller(self.planner._world, self.GUI)
 
 		self.robot_action_list = []
 
@@ -181,12 +181,15 @@ class Attacker_Controller(Robot_Controller):
 	Attacker implementation.
 	"""
 
-	def __init__(self, world):
+	def __init__(self, world, gui):
 		"""
 		Do the same setup as the Robot class, as well as anything specific to the Attacker.
 		"""
 		super(Attacker_Controller, self).__init__(world)
+		self.gui = gui
 		
+	def setSpeed(self, i):
+		return max(i, int(i * float(self.gui.getSpeedMultiplier()) / 10))
 
 	def execute(self, comm, controller):
 		"""
@@ -194,11 +197,16 @@ class Attacker_Controller(Robot_Controller):
 		"""
 		action = controller.robot_action_list[0][0]
 
-		slow_speed = 3
-		turn_speed = 7
-		turn_speed_slow = 4
-		turn_speed_aiming = 3
-		fast_speed = 4
+		if self.gui.getSpeedMultiplier() == 0:
+			comm.stop()
+			return
+
+		slow_speed = self.setSpeed(1)
+		turn_speed = self.setSpeed(4)
+		turn_speed_slow = self.setSpeed(2)
+		turn_speed_aiming = self.setSpeed(1)
+		fast_speed = self.setSpeed(4)
+		
 
 		if action != None:
 			print action    
@@ -250,14 +258,14 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-fast_speed, -fast_speed-2)	
+			comm.drive(-fast_speed+1, -fast_speed-1)	
 
 		elif action == 'drive':
 		  
 			comm.drive(fast_speed, fast_speed+1)
 		elif action == 'drive_intercept':
 		  
-			comm.drive(fast_speed-1, fast_speed)	
+			comm.drive(fast_speed-2, fast_speed-1)	
 		elif action == 'drive_slow':
 		  
 			comm.drive(slow_speed, slow_speed+1)

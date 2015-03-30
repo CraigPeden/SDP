@@ -3,7 +3,6 @@ from collections import namedtuple
 
 import cv2
 import numpy as np
-
 import tools
 from tracker import BallTracker, RobotTracker
 from colors import BGR_COMMON
@@ -86,6 +85,9 @@ class Vision:
         self.ball_tracker = BallTracker(
             (0, width, 0, height), 0, pitch, calibration)
 
+
+
+
     def _get_zones(self, width, height):
         return [(val[0], val[1], 0, height) for val in tools.get_zones(width, height, pitch=self.pitch)]
 
@@ -130,7 +132,7 @@ class Vision:
         """
         plane_height = 1500.0
         robot_height = 20.0
-        coefficient = robot_height / plane_height
+        coefficient = robot_height / plane_height  #""" this is why the dots are slightly offset """
 
         x = point[0]
         y = point[1]
@@ -263,18 +265,19 @@ class Camera(object):
             ]
 
     def fix_radial_distortion(self, frame):
-        return cv2.undistort(
-            frame, self.c_matrix, self.dist, None, self.nc_matrix)
+        return cv2.undistort(frame, self.c_matrix, self.dist, None, self.nc_matrix)
 
     def get_adjusted_center(self, frame):
         return (320 - self.crop_values[0], 240 - self.crop_values[2])
 
 
 class GUI(object):
-    VISION = 'SUCH VISION'
+    VISION = 'Team 8 Vision System'
     BG_SUB = 'BG Subtract'
     NORMALIZE = 'Normalize  '
-    COMMS = 'Communications on/off '
+    CALIBRATE = 'Calibrate Normalization'
+    CATCHERAREA = 'Catcher Area'
+    SPEEDMUL = 'Speed Multiplier'
 
     def nothing(self, x):
         pass
@@ -285,18 +288,27 @@ class GUI(object):
         self.arduino = arduino
         self.pitch = pitch
         self.frame = None
+        self.speed_multiplier = 5
+        self.catcher_area_height = 25
         cv2.namedWindow(self.VISION)
 
         cv2.createTrackbar(self.BG_SUB, self.VISION, 0, 1, self.nothing)
         cv2.createTrackbar(self.NORMALIZE, self.VISION, 0, 1, self.nothing)
-        cv2.createTrackbar(
-            self.COMMS, self.VISION, 1, 1, self.nothing)
+        cv2.createTrackbar(self.CALIBRATE, self.VISION, 0, 1, self.nothing)
+        cv2.createTrackbar(self.CATCHERAREA, self.VISION, self.catcher_area_height, 40, self.nothing)
+        cv2.createTrackbar(self.SPEEDMUL, self.VISION, self.speed_multiplier, 10, self.nothing)
 
         #cv2.setMouseCallback(self.VISION, self.get_hsv)
 
     def get_hsv(self, event, x, y, flags, param):
         hsv = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
-        print hsv[x][y]
+        #print hsv[x][y]
+
+    def getSpeedMultiplier(self):
+        return cv2.getTrackbarPos(self.SPEEDMUL, self.VISION)
+
+    def getCatcherArea(self):
+        return cv2.getTrackbarPos(self.CATCHERAREA, self.VISION)
 
     def to_info(self, args):
         """
@@ -357,6 +369,8 @@ class GUI(object):
         if preprocess is not None:
             preprocess['normalize'] = self.cast_binary(
                 cv2.getTrackbarPos(self.NORMALIZE, self.VISION))
+            preprocess['calibrate'] = self.cast_binary(
+                cv2.getTrackbarPos(self.CALIBRATE, self.VISION))
             preprocess['background_sub'] = self.cast_binary(
                 cv2.getTrackbarPos(self.BG_SUB, self.VISION))
 
