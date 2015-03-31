@@ -24,7 +24,7 @@ class DefenderGrab:
 		if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
 
 			self.our_defender.catcher = 'open'
-			return 'open_catcher'
+			return [('open_catcher', 1)]
 
 		opponent_zone = self.world._pitch._zones[self.world.their_attacker.zone]
 		min_x, max_x, min_y, max_y = opponent_zone.boundingBox()
@@ -33,7 +33,7 @@ class DefenderGrab:
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
 
 			self.our_defender.catcher = 'closed'
-			return [('stop', 0), ('grab', 1.5), ('backwards', 0.7)]	
+			return [('stop', 0), ('grab', 1.5), ('backwards', 1)]	
 
 		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
 
@@ -236,7 +236,7 @@ class DefenderPass:
 
 	def pick_action(self):
 
-		distance_between_robots = self.our_defender.get_displacement_to_point(self.their_attacker.x, self.their_attacker.y)
+		distance_between_robots = self.our_defender.y - self.their_attacker.y
 
 
 		if self.their_attacker.y < self.center_y:
@@ -258,30 +258,31 @@ class DefenderPass:
 		print 'Catcher closed:' + self.our_defender.catcher
 
 		# When catching the ball if their attack is far from us, we shoot 
-		if distance_between_robots > 200:
+		if distance_between_robots > 150:
+			print 'Direct Pass'
 			angle_to_pass = self.our_defender.get_rotation_to_point(self.our_attacker.x, self.our_attacker.y)
 			if abs(angle_to_pass) > math.pi/12:
 				if angle_to_pass>0:
-					return 'turn_left_slow'
+					return [('turn_left_slow', 0.3), ('stop', 0)]
 				else:
-					return 'turn_right_slow'
+					return [('turn_right_slow', 0.3), ('stop', 0)]
 			else:
 				self.our_defender.catcher = 'open'
 				return [('open_catcher', 0.5), ('kick', 1)]
 
 
 
-		if distance < 35 and abs(angle_to_pass_point) < math.pi / 18:
+		if distance < 35 and abs(angle_to_pass_point) < math.pi / 27:
 			self.our_defender.catcher = 'open'
 			return [('open_catcher', 0.5), ('kick', 1)]
 
-		elif distance < 35 and abs(angle_to_pass_point) > math.pi / 18:
+		elif distance < 35 and abs(angle_to_pass_point) > math.pi / 27:
 
 			if angle_to_pass_point > 0:
-				return 'turn_left_slow'
+				return [('turn_left_slow', 0.2), ('stop', 0)]
 				#return [('turn_left', 0.2), ('stop', 0.2)]
 			elif angle_to_pass_point < 0:
-				return 'turn_right_slow'
+				return [('turn_right_slow', 0.2), ('stop', 0)]
 				#return [('turn_right', 0.2), ('stop', 0.2)]
 
 		elif distance > 20 and abs(angle) < math.pi / 12:
@@ -293,9 +294,9 @@ class DefenderPass:
 		elif distance > 20 and abs(angle) <  math.pi / 2:
 
 			if angle > 0:
-				return [('turn_left', 0.2), ('stop', 0.2)]
+				return [('turn_left', 0.2), ('stop', 0.1)]
 			elif angle < 0:
-				return [('turn_right', 0.2), ('stop', 0.2)]
+				return [('turn_right', 0.2), ('stop', 0.1)]
 
 
 

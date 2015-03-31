@@ -201,11 +201,11 @@ class Attacker_Controller(Robot_Controller):
 			comm.stop()
 			return
 
-		slow_speed = self.setSpeed(1)
+		slow_speed = self.setSpeed(3)
 		turn_speed = self.setSpeed(4)
-		turn_speed_slow = self.setSpeed(2)
+		turn_speed_slow = self.setSpeed(4)
 		turn_speed_aiming = self.setSpeed(1)
-		fast_speed = self.setSpeed(4)
+		fast_speed = self.setSpeed(5)
 		
 
 		if action != None:
