@@ -69,7 +69,7 @@ class Controller:
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
 
 		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, gui=self.GUI)
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, gui=self.GUI, comm = self.arduino)
 
 		self.color = color
 		self.side = our_side
@@ -79,6 +79,7 @@ class Controller:
 		self.preprocessing = Preprocessing()
 	#it doesn't matter whether it is an Attacker or a Defender Controller
 		self.controller = Attacker_Controller(self.planner._world, self.GUI)
+
 
 		self.robot_action_list = []
 

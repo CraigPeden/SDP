@@ -6,20 +6,21 @@ from utilities import *
 
 class Planner:
 
-	def __init__(self, our_side, pitch_num, our_color, gui):
+	def __init__(self, our_side, pitch_num, our_color, gui, comm):
 		self._world = World(our_side, pitch_num)
 		self.gui = gui
 		self._world.our_defender.catcher_area = {'width' : 20, 'height' : self.gui.getCatcherArea(), 'front_offset' : 10} 
 		self._world.our_attacker.catcher_area = {'width' : 35, 'height' : 30, 'front_offset' : 12} 
 		self._world.our_defender.catcher='open'
 		self.our_side = our_side
+		self.comm = comm
 		#needs to be checked
 
 			
 
 		self.defender_intercept_strategy= DefenderIntercept(self._world, our_side)
 		self.defender_grab_strategy= DefenderGrab(self._world)
-		self.defender_save_strategy= DefenderSave(self._world, our_side)
+		self.defender_save_strategy= DefenderSave(self._world, our_side, comm)
 		self.defender_pass_strategy= DefenderPass(self._world, our_side, pitch_num)
 		self.BALL_VELOCITY_THRESH = 10	
 	  
@@ -66,7 +67,7 @@ class Planner:
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 
-		elif our_defender.has_ball(ball):
+		elif self.comm.hasGrabbed() and self.comm.hasBall():
 			print 'DefenderPass'   
 			self._world.our_defender.catcher_area = {'width' : 100, 'height' : 100, 'front_offset' : -40} 
 			self._robot_current_strategy = self.defender_pass_strategy

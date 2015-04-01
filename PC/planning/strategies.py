@@ -3,7 +3,7 @@ import time
 
 
 class DefenderGrab:
-	def __init__(self, world):
+	def __init__(self, world, comm):
 		self.world = world
 
 		self.our_defender = self.world.our_defender
@@ -13,6 +13,8 @@ class DefenderGrab:
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
 		self.center_y = (max_y + min_y)/2
 
+		self.comm = comm
+
 
 	def pick_action(self):
 
@@ -20,8 +22,10 @@ class DefenderGrab:
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
+		if self.comm.grabberArmed() == False and self.hasBall() == False:
+			self.comm.grab()
 
-		if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
+		if not self.comm.hasBall() and self.our_defender.catcher == 'closed':
 
 			self.our_defender.catcher = 'open'
 			return [('open_catcher', 1)]
@@ -30,15 +34,15 @@ class DefenderGrab:
 		min_x, max_x, min_y, max_y = opponent_zone.boundingBox()
 		angle_to_opponent_zone = self.our_defender.get_rotation_to_point((max_x - min_x)/2, self.our_defender.y)
 
-		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
+		if self.comm.hasGrabbed() and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
 
 			self.our_defender.catcher = 'closed'
-			return [('stop', 0), ('grab', 1.5), ('backwards', 1)]	
+			return [('stop', 1), ('backwards', 1)]	
 
-		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
+		if self.comm.hasBall() and self.our_defender.catcher == 'open':
 
 			self.our_defender.catcher = 'closed'
-			return 'grab'
+			return 'stop'
 
 		#if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
 
