@@ -148,7 +148,7 @@ class Communication(object):
         return "action"
 
     def grab(self):
-        self.write(self.kicker, 6)
+        self.write(self.kicker, 5)
         self.has_grabed = False
 
     def rotation(self, angle):

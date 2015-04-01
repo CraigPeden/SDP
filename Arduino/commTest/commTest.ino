@@ -113,15 +113,7 @@ void controlKicker(int value)
     kickerState = 3;
     motorForward(2,100);
   }
-    else if (value == 5)
-  {
-    // Has ball
-    if (!IRbuffer)
-      Serial.write(0b10111111);
-    else
-      Serial.write(0b11111110);
-  }
-    else if(value == 6)
+    else if(value == 5)
   {
     // Grab when IR is blocked.
     grab = true;
@@ -155,8 +147,20 @@ void controlMotor(int motor, byte msg)
   
 }
 
+unsigned long updateBall = millis();
+
 void loop()
 {  
+  
+  if (updateBall + 200 < millis()) {
+    updateBall = millis();
+    
+        // Has ball
+    if (!IRbuffer)
+      Serial.write(0b10111111);
+    else
+      Serial.write(0b11111110); 
+  }
   
   /* If the kicker flag kickerAction is set,
   check if the time is reached. */
