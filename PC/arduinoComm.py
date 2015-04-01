@@ -89,7 +89,7 @@ class Communication(object):
     def readMsg(self):
         while True:
             if (self.ser.inWaiting() > 0):
-                msg = self.ser.read(1)
+                msg = int(self.ser.read(1).encode('hex'), 16)
 
                 # Has ball
                 if msg == 0b10111111:
