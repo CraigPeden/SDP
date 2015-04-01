@@ -30,7 +30,11 @@ stdscr.refresh()
 # Starts listening for input
 key = ''
 while key != ord('q') and key != ord('Q'):
-    key = stdscr.getch()
+    try:
+        key = stdscr.getch()
+    except KeyboardInterrupt:
+        curses.endwin()
+        exit()
 
     if key == curses.KEY_UP: 
         stdscr.addstr(12, 0, "UP       ")
@@ -68,7 +72,7 @@ while key != ord('q') and key != ord('Q'):
         stdscr.addstr(12, 0, "HAS BALL ")
         stdscr.refresh()
         try:
-            if comms.checkHasBall():
+            if comms.hasBall():
                 stdscr.addstr(14, 0, "Ball grabbed!   ")
             else:
                 stdscr.addstr(14, 0, "Don't have ball.")
