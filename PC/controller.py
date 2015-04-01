@@ -20,7 +20,7 @@ class Controller:
 	Primary source of robot control. Ties vision and planning together.
 	"""
 
-	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyACM0', comms=1):
 		"""
 		Entry point for the SDP system.
 
@@ -190,6 +190,9 @@ class Attacker_Controller(Robot_Controller):
 		self.gui = gui
 		
 	def setSpeed(self, i):
+		if self.gui.getSpeedMultiplier() == 10:
+			return min(7, i+1)
+
 		return max(i, int(i * float(self.gui.getSpeedMultiplier()) / 10))
 
 	def execute(self, comm, controller):
@@ -202,11 +205,11 @@ class Attacker_Controller(Robot_Controller):
 			comm.stop()
 			return
 
-		slow_speed = self.setSpeed(3)
-		turn_speed = self.setSpeed(4)
-		turn_speed_slow = self.setSpeed(4)
+		slow_speed = self.setSpeed(1)
+		turn_speed = self.setSpeed(2)
+		turn_speed_slow = self.setSpeed(2)
 		turn_speed_aiming = self.setSpeed(1)
-		fast_speed = self.setSpeed(5)
+		fast_speed = self.setSpeed(4)
 		
 
 		if action != None:

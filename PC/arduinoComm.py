@@ -148,7 +148,7 @@ class Communication(object):
         """
         return self.has_grabed
 
-    def grabberArmed():
+    def grabberArmed(self):
         return self.grabber_armed
 
     def getLastReceived(self):

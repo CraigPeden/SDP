@@ -19,8 +19,8 @@ class Planner:
 			
 
 		self.defender_intercept_strategy= DefenderIntercept(self._world, our_side)
-		self.defender_grab_strategy= DefenderGrab(self._world)
-		self.defender_save_strategy= DefenderSave(self._world, our_side, comm)
+		self.defender_grab_strategy= DefenderGrab(self._world, self.comm)
+		self.defender_save_strategy= DefenderSave(self._world, our_side)
 		self.defender_pass_strategy= DefenderPass(self._world, our_side, pitch_num)
 		self.BALL_VELOCITY_THRESH = 10	
 	  
@@ -61,13 +61,13 @@ class Planner:
 			self._robot_current_strategy = self.defender_intercept_strategy
 			return self._robot_current_strategy.pick_action() 			
 
-		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and our_defender.has_ball(ball) == False:
+		elif self._world.pitch.zones[our_defender.zone].isInside(ball.x, ball.y) and self.comm.hasBall() == False:
 			print 'DefenderGrab'
 			self._world.our_defender.catcher_area = {'width' : 25, 'height' : self.gui.getCatcherArea(), 'front_offset' : 10}           
 			self._robot_current_strategy = self.defender_grab_strategy
 			return self._robot_current_strategy.pick_action()
 
-		elif self.comm.hasGrabbed() and self.comm.hasBall():
+		elif self.comm.hasGrabbed():
 			print 'DefenderPass'   
 			self._world.our_defender.catcher_area = {'width' : 100, 'height' : 100, 'front_offset' : -40} 
 			self._robot_current_strategy = self.defender_pass_strategy

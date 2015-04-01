@@ -22,7 +22,7 @@ class DefenderGrab:
 		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
 		print 'Catcher closed:' + self.our_defender.catcher
 
-		if self.comm.grabberArmed() == False and self.hasBall() == False:
+		if self.comm.hasBall() == False and self.comm.hasGrabbed() == False:
 			self.comm.grab()
 
 		if not self.comm.hasBall() and self.our_defender.catcher == 'closed':
