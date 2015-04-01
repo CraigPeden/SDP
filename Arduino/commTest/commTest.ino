@@ -115,8 +115,11 @@ void controlKicker(int value)
   }
     else if (value == 5)
   {
-    // Has ball?
-    Serial.write(!IRbuffer);
+    // Has ball
+    if (!IRbuffer)
+      Serial.write(0b10111111);
+    else
+      Serial.write(0b11111110);
   }
     else if(value == 6)
   {
@@ -192,6 +195,7 @@ void loop()
   if (grab && !IRbuffer) {
     grab = false;
     controlKicker(0);
+    Serial.write(0b11111101);
   }
   
   /* Update IR */
