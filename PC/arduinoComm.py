@@ -43,6 +43,7 @@ class Communication(object):
 
         self.has_ball = False
         self.has_grabed = False
+        self.grabber_armed = False
         self.last_received = None
 
         read_thread = threading.Thread(target=self.readMsg)
@@ -101,6 +102,10 @@ class Communication(object):
                 # Has grabbed
                 elif msg == 0b11111101:
                     self.has_grabed = True
+                    self.grabber_armed = False
+
+                elif msg == 0b11111100:
+                    self.grabber_armed = True
 
                 else:
                     self.last_received = msg
@@ -142,6 +147,9 @@ class Communication(object):
             Check if the robot has executed the grab command.
         """
         return self.has_grabed
+
+    def grabberArmed():
+        return self.grabber_armed
 
     def getLastReceived(self):
         # TODO
