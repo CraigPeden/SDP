@@ -117,6 +117,7 @@ void controlKicker(int value)
   {
     // Grab when IR is blocked.
     grab = true;
+    Serial.write(0b11111100);
   }
 }
 
@@ -152,7 +153,7 @@ unsigned long updateBall = millis();
 void loop()
 {  
   
-  if (updateBall + 200 < millis()) {
+  if (updateBall + 30 < millis()) {
     updateBall = millis();
     
         // Has ball
@@ -208,7 +209,7 @@ void loop()
     
     if (IRtoggle) {
       IRbuffer += readIR();
-      IRbuffer <<= 1;
+      IRbuffer <<= 2;
       
       // Switch IR off
       irsend.space(0);
