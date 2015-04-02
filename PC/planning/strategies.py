@@ -19,13 +19,17 @@ class DefenderGrab:
 	def pick_action(self):
 
 		distance, angle = self.our_defender.get_direction_to_point(self.ball.x, self.ball.y)
-		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Grabber Armed:' + str(self.comm.grabberArmed())
+		print 'Has Ball:' + str(self.comm.hasBall())
+		print 'Has Grabbed:' + str(self.comm.hasGrabbed())
 		print 'Catcher closed:' + self.our_defender.catcher
 
-		if self.comm.hasBall() == False and self.comm.hasGrabbed() == False:
+
+
+		if self.comm.hasBall() == False:
 			self.comm.grab()
 
-		if not self.comm.hasBall() and self.our_defender.catcher == 'closed':
+		if self.comm.hasBall() == False and self.our_defender.catcher == 'closed':
 
 			self.our_defender.catcher = 'open'
 			return [('open_catcher', 1)]
@@ -34,7 +38,7 @@ class DefenderGrab:
 		min_x, max_x, min_y, max_y = opponent_zone.boundingBox()
 		angle_to_opponent_zone = self.our_defender.get_rotation_to_point((max_x - min_x)/2, self.our_defender.y)
 
-		if self.comm.hasGrabbed() and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
+		if self.comm.hasBall() and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
 
 			self.our_defender.catcher = 'closed'
 			return [('stop', 1), ('backwards', 1)]	
@@ -204,10 +208,11 @@ class DefenderIntercept:
 
 
 class DefenderPass:
-	def __init__(self, world, our_side, pitch_num):
+	def __init__(self, world, our_side, pitch_num, comm):
 		self.world = world
 		self.our_side = our_side
 		self.pitch_num = pitch_num
+		self.comm = comm
 
 		self.DISTANCE_THRESH = 15
 		self.ANGLE_THRESH = math.pi / 12
@@ -242,6 +247,10 @@ class DefenderPass:
 
 		distance_between_robots = self.our_defender.y - self.their_attacker.y
 
+
+		if self.comm.hasBall() and self.our_defender.catcher == 'open':
+
+			self.our_defender.catcher = 'closed'
 
 		if self.their_attacker.y < self.center_y:
 			if self.our_side == 'left':
