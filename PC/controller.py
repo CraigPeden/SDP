@@ -46,8 +46,9 @@ class Controller:
 
 		# Set up the Arduino communications
 		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
-		time.sleep(2.5)
+		time.sleep(0.5)
 		self.arduino.grabberUp()
+		self.arduino.grab()
 		
 
 		# Set up camera for frames
@@ -147,6 +148,10 @@ class Controller:
 					our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
 				counter += 1
 
+				if c == ord('a'):
+					self.arduino.grabberUp()
+					self.arduino.grab()
+
 		except:
 			if self.controller is not None:
 				self.controller.shutdown(self.arduino)
@@ -191,7 +196,7 @@ class Attacker_Controller(Robot_Controller):
 		
 	def setSpeed(self, i):
 		if self.gui.getSpeedMultiplier() == 10:
-			return min(7, i+1)
+			return min(7, i+3)
 
 		return max(i, int(i * float(self.gui.getSpeedMultiplier()) / 10))
 
@@ -208,7 +213,7 @@ class Attacker_Controller(Robot_Controller):
 		slow_speed = self.setSpeed(1)
 		turn_speed = self.setSpeed(2)
 		turn_speed_slow = self.setSpeed(2)
-		turn_speed_aiming = self.setSpeed(1)
+		turn_speed_aiming = self.setSpeed(3)
 		fast_speed = self.setSpeed(4)
 		
 
@@ -241,11 +246,11 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'turn_left_slow':
 
 		  
-			comm.drive(-turn_speed_slow, turn_speed_slow+1)
+			comm.drive(-turn_speed_slow, min(7, turn_speed_slow+1))
 
 		elif action == 'turn_right_slow':
 		  
-			comm.drive(turn_speed_slow, -turn_speed_slow-1)
+			comm.drive(turn_speed_slow, max(-7, -turn_speed_slow-1))
 
 		elif action == 'turn_left_aiming':
 
@@ -258,21 +263,21 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'backwards':
 		  
-			comm.drive(-slow_speed, -slow_speed-2)
+			comm.drive(-slow_speed, max(-7, -slow_speed-2))
 
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-fast_speed+1, -fast_speed-1)	
+			comm.drive(-fast_speed+1, max(-7, -fast_speed-1))
 
 		elif action == 'drive':
 		  
-			comm.drive(fast_speed, fast_speed+1)
+			comm.drive(fast_speed, min(7, fast_speed+1))
 		elif action == 'drive_intercept':
 		  
 			comm.drive(fast_speed-2, fast_speed-1)	
 		elif action == 'drive_slow':
 		  
-			comm.drive(slow_speed, slow_speed+1)
+			comm.drive(slow_speed, min(7, slow_speed+1))
 		elif action == 'turn_left_go':
 			comm.drive(fast_speed-2, fast_speed)
 		elif action == 'turn_right_go':
