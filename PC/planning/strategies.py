@@ -3,7 +3,7 @@ import time
 
 
 class DefenderGrab:
-	def __init__(self, world):
+	def __init__(self, world, comm):
 		self.world = world
 
 		self.our_defender = self.world.our_defender
@@ -13,32 +13,42 @@ class DefenderGrab:
 		min_x, max_x, min_y, max_y = self.zone.boundingBox()
 		self.center_y = (max_y + min_y)/2
 
+		self.comm = comm
+		self.last_grab = time.time()
+		self.comm.grab()
+
 
 	def pick_action(self):
 
 		distance, angle = self.our_defender.get_direction_to_point(self.ball.x, self.ball.y)
-		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Grabber Armed:' + str(self.comm.grabberArmed())
+		print 'Has Ball:' + str(self.comm.hasBall())
+		print 'Has Grabbed:' + str(self.comm.hasGrabbed())
 		print 'Catcher closed:' + self.our_defender.catcher
 
 
-		if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
+
+		if self.comm.hasBall() == False and self.last_grab + 4 < time.time():
+			self.comm.grab()
+
+		if self.comm.hasBall() == False and self.our_defender.catcher == 'closed':
 
 			self.our_defender.catcher = 'open'
-			return 'open_catcher'
+			return [('open_catcher', 1)]
 
 		opponent_zone = self.world._pitch._zones[self.world.their_attacker.zone]
 		min_x, max_x, min_y, max_y = opponent_zone.boundingBox()
 		angle_to_opponent_zone = self.our_defender.get_rotation_to_point((max_x - min_x)/2, self.our_defender.y)
 
-		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
+		if self.comm.hasBall() and self.our_defender.catcher == 'open' and abs(self.ball.y - self.center_y)>80 and abs(angle_to_opponent_zone) > math.pi/4:
 
 			self.our_defender.catcher = 'closed'
-			return [('stop', 0), ('grab', 1.5), ('backwards', 0.7)]	
+			return [('stop', 1), ('backwards', 1)]	
 
-		if self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'open':
+		if self.comm.hasBall() and self.our_defender.catcher == 'open':
 
 			self.our_defender.catcher = 'closed'
-			return 'grab'
+			return 'stop'
 
 		#if not self.our_defender.can_catch_ball(self.ball) and self.our_defender.catcher == 'closed':
 
@@ -49,15 +59,15 @@ class DefenderGrab:
 		
 			if abs(angle) > math.pi / 18:
 				if angle > 0:
-					return [('turn_left', 0.2), ('stop', 0)]
+					return [('turn_left_slow', 0.3), ('stop', 0)]
 				elif angle < 0:
-					return [('turn_right', 0.2), ('stop', 0)]
+					return [('turn_right_slow', 0.3), ('stop', 0)]
 
 			elif distance > 120:
 				return 'drive'
 
 			else:
-				return [('drive_slow', 0.3), ('stop', 0)]
+				return 'drive_slow'
 
 
 
@@ -112,8 +122,8 @@ class DefenderIntercept:
 	def pick_action(self):
 
 
-		self.predicted_y_intersecton = self.predict_y_intersection(self.world, self.center_x, self.their_attacker)
-		self.predicted_y_intersecton_other_defender = self.predict_y_intersection(self.world, self.center_x, self.their_defender)
+		self.predicted_y_intersecton = self.predict_y_intersection(self.world, self.world.our_goal.x, self.their_attacker)
+		self.predicted_y_intersecton_other_defender = self.predict_y_intersection(self.world, self.world.our_goal.x, self.their_defender)
 		
 		if self.ball.velocity > 3 :
 			top_y = self.world.our_goal.y + (self.world.our_goal.width/2)
@@ -200,10 +210,11 @@ class DefenderIntercept:
 
 
 class DefenderPass:
-	def __init__(self, world, our_side, pitch_num):
+	def __init__(self, world, our_side, pitch_num, comm):
 		self.world = world
 		self.our_side = our_side
 		self.pitch_num = pitch_num
+		self.comm = comm
 
 		self.DISTANCE_THRESH = 15
 		self.ANGLE_THRESH = math.pi / 12
@@ -236,8 +247,12 @@ class DefenderPass:
 
 	def pick_action(self):
 
-		distance_between_robots = self.our_defender.get_displacement_to_point(self.their_attacker.x, self.their_attacker.y)
+		distance_between_robots = self.our_defender.y - self.their_attacker.y
 
+
+		if self.comm.hasBall() and self.our_defender.catcher == 'open':
+
+			self.our_defender.catcher = 'closed'
 
 		if self.their_attacker.y < self.center_y:
 			if self.our_side == 'left':
@@ -254,35 +269,47 @@ class DefenderPass:
 
 		distance, angle = self.our_defender.get_direction_to_point(self.center_x, self.center_y)
 		
-		print 'Can catch ball:' + str(self.our_defender.can_catch_ball(self.ball))
+		print 'Grabber Armed:' + str(self.comm.grabberArmed())
+		print 'Has Ball:' + str(self.comm.hasBall())
+		print 'Has Grabbed:' + str(self.comm.hasGrabbed())
 		print 'Catcher closed:' + self.our_defender.catcher
 
 		# When catching the ball if their attack is far from us, we shoot 
-		if distance_between_robots > 200:
+		if distance_between_robots > 150:
+			print 'Direct Pass'
 			angle_to_pass = self.our_defender.get_rotation_to_point(self.our_attacker.x, self.our_attacker.y)
 			if abs(angle_to_pass) > math.pi/12:
 				if angle_to_pass>0:
-					return 'turn_left_slow'
+					return [('turn_left_slow', 0.3), ('stop', 0)]
 				else:
-					return 'turn_right_slow'
+					return [('turn_right_slow', 0.3), ('stop', 0)]
 			else:
 				self.our_defender.catcher = 'open'
 				return [('open_catcher', 0.5), ('kick', 1)]
 
 
 
-		if distance < 35 and abs(angle_to_pass_point) < math.pi / 18:
+		if distance < 35 and abs(angle_to_pass_point) < math.pi / 27:
 			self.our_defender.catcher = 'open'
 			return [('open_catcher', 0.5), ('kick', 1)]
 
-		elif distance < 35 and abs(angle_to_pass_point) > math.pi / 18:
+		elif distance < 35 and abs(angle_to_pass_point) > math.pi / 27:
+			if abs(angle_to_pass_point) > math.pi / 5:
 
-			if angle_to_pass_point > 0:
-				return 'turn_left_slow'
-				#return [('turn_left', 0.2), ('stop', 0.2)]
-			elif angle_to_pass_point < 0:
-				return 'turn_right_slow'
-				#return [('turn_right', 0.2), ('stop', 0.2)]
+				if angle_to_pass_point > 0:
+					return [('turn_left_aiming', 0.3), ('stop', 0)]
+					#return [('turn_left', 0.2), ('stop', 0.2)]
+				elif angle_to_pass_point < 0:
+					return [('turn_right_aiming', 0.3), ('stop', 0)]
+					#return [('turn_right', 0.2), ('stop', 0.2)]
+			else:
+				
+				if angle_to_pass_point > 0:
+					return [('turn_left_slow', 0.2), ('stop', 0)]
+					#return [('turn_left', 0.2), ('stop', 0.2)]
+				elif angle_to_pass_point < 0:
+					return [('turn_right_slow', 0.2), ('stop', 0)]
+					#return [('turn_right', 0.2), ('stop', 0.2)]		
 
 		elif distance > 20 and abs(angle) < math.pi / 12:
 
@@ -293,9 +320,9 @@ class DefenderPass:
 		elif distance > 20 and abs(angle) <  math.pi / 2:
 
 			if angle > 0:
-				return [('turn_left', 0.2), ('stop', 0.2)]
+				return [('turn_left', 0.2), ('stop', 0.1)]
 			elif angle < 0:
-				return [('turn_right', 0.2), ('stop', 0.2)]
+				return [('turn_right', 0.2), ('stop', 0.1)]
 
 
 
