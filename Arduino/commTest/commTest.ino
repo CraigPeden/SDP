@@ -35,12 +35,16 @@ boolean grabberAction = false;
 unsigned long grabberTime = millis();
 int grabberDown = 500;
 int grabberUp = 800;
-int kickerKick = 220;
+boolean grabberClosing = false;
+
+int kickerKick = 230;
 int kickerRetract = 200;
 int simpleKick = 500;
 int simpleRetract = 500;
 int kickerSleep = 100;
 boolean grab = false;
+
+unsigned long grabberBlockTimer = millis();
 
 /* IR setup */
 // IR emitter LED on digital pin 3
@@ -84,6 +88,7 @@ void controlKicker(int value)
     grabberTime = millis() + grabberDown;
     grabberAction = true;
     motorForward(3,100);
+    grabberClosing = true;
   }
   else if(value == 1)
   {
@@ -117,7 +122,6 @@ void controlKicker(int value)
   {
     // Grab when IR is blocked.
     grab = true;
-    Serial.write(0b11111100);
   }
 }
 
@@ -195,21 +199,34 @@ void loop()
   {
     grabberAction = false;
     motorStop(3);
+    
+    if (grabberClosing) {
+      grabberClosing = false;
+         if (!IRbuffer) {
+           // caught the ball
+           Serial.write(0b11111100);
+         } else {
+           controlKicker(1);
+         }
+    } else {
+      grabberBlockTimer = millis() + 1000;
+      controlKicker(5); 
+    }
   }
   
-  if (grab && !IRbuffer) {
+  if (grab && !IRbuffer && grabberBlockTimer < millis()) {
     grab = false;
     controlKicker(0);
     Serial.write(0b11111101);
   }
   
   /* Update IR */
-  if (IRtimer + 10 < millis()) {
+  if (IRtimer + 5 < millis()) {
     IRtimer = millis();
     
     if (IRtoggle) {
       IRbuffer += readIR();
-      IRbuffer <<= 2;
+      IRbuffer <<= 1;
       
       // Switch IR off
       irsend.space(0);
