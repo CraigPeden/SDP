@@ -1,5 +1,6 @@
 import time
 import serial
+import threading
 from simulatorClient import simulatorClient
 
 class Communication(object):
@@ -40,6 +41,15 @@ class Communication(object):
         self.right_motor = 0b00100000
         self.kicker = 0b00110000
 
+        self.has_ball = False
+        self.has_grabed = False
+        self.grabber_armed = False
+        self.last_received = None
+
+        read_thread = threading.Thread(target=self.readMsg)
+        read_thread.setDaemon(True)
+        read_thread.start()
+
     def write(self, opcode, value=0, attemps=-1, signature=1):
        # print opcode
         if value > 15 or value < 0:
@@ -64,18 +74,43 @@ class Communication(object):
             elif attemps != -1:
                 raise Exception("Write failed")
 
-    def read(self, timeout=0.1, buffer_size=1):
-        start_time = time.time()
-        out = []
+    # def read(self, timeout=0.1, buffer_size=1):
+    #     start_time = time.time()
+    #     out = []
 
-        while (timeout > time.time() - start_time):
+    #     while (timeout > time.time() - start_time):
+    #         if (self.ser.inWaiting() > 0):
+    #             out.append(self.ser.read())
+
+    #             if len(out) == buffer_size:
+    #                 return out
+
+    #     raise Exception("Read timed out")
+
+    def readMsg(self):
+        while True:
             if (self.ser.inWaiting() > 0):
-                out.append(self.ser.read())
+                msg = int(self.ser.read(1).encode('hex'), 16)
 
-                if len(out) == buffer_size:
-                    return out
+                # Has ball
+                if msg == 0b10111111:
+                    self.has_ball = True
 
-        raise Exception("Read timed out")
+                elif msg == 0b11111110:
+                    self.has_ball = False
+
+                # Has grabbed
+                elif msg == 0b11111101:
+                    self.has_grabed = True
+                    self.grabber_armed = False
+
+                elif msg == 0b11111100:
+                    self.grabber_armed = True
+
+                else:
+                    self.last_received = msg
+            else:
+                time.sleep(0.005)
 
     def grabberDown(self):
         self.write(self.kicker, 0)
@@ -101,15 +136,28 @@ class Communication(object):
         """
         self.write(self.kicker, 4)
 
-    # def checkHasBall(self, timeout=0.2):
-    #     """
-    #         Check if the robot has the ball.
-    #     """
-    #     self.write(self.kicker, 5)
-    #     return int((self.read(timeout, 2)[1]).encode('hex'), 16) == 1
+    def hasBall(self):
+        """
+            Check if the robot has the ball.
+        """
+        return self.has_ball
+
+    def hasGrabbed(self):
+        """
+            Check if the robot has executed the grab command.
+        """
+        return self.has_grabed
+
+    def grabberArmed(self):
+        return self.grabber_armed
+
+    def getLastReceived(self):
+        # TODO
+        return "action"
 
     def grab(self):
-        self.write(self.kicker, 6)
+        self.write(self.kicker, 5)
+        self.has_grabed = False
 
     def rotation(self, angle):
         if angle > 14 or angle < 0:
@@ -135,28 +183,6 @@ class Communication(object):
                 self.write(self.right_motor, right_wheel_speed + 8)
             else:
                 self.write(self.right_motor, right_wheel_speed + 7)
-
-
-class Vision(object):
-    """
-    Class which will handle interfacing with the vision
-    system to give required information about the scanario
-    """
-
-    def ball_position(self):
-        # Function that will return the current position of the ball
-        self.ball_position = (0, 0)
-
-    def robot_position(self):
-        # Function that will return the current position of the robot
-        self.robot_position = (10, 10)
-
-
-class Movement(object):
-    def movement(self, robot_position, ball_position):
-        # Maths to move the robot from it's current position to the ball
-        self.test = "hello"
-
 
 def countSetBits(n):
     count = 0

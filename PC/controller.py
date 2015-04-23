@@ -12,7 +12,6 @@ import arduinoComm
 
 
 
-
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
@@ -21,7 +20,7 @@ class Controller:
 	Primary source of robot control. Ties vision and planning together.
 	"""
 
-	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyUSB0', comms=1):
+	def __init__(self, pitch, color, our_side, video_port=0, comm_port='/dev/ttyACM0', comms=1):
 		"""
 		Entry point for the SDP system.
 
@@ -46,11 +45,11 @@ class Controller:
 
 
 		# Set up the Arduino communications
-
-		self.arduino = arduinoComm.Communication("/dev/pts/0", 9600)
-		time.sleep(2.5)
+		self.arduino = arduinoComm.Communication("/dev/ttyACM0", 9600)
+		time.sleep(0.5)
 		self.arduino.grabberUp()
-
+		self.arduino.grab()
+		
 
 		# Set up camera for frames
 		self.camera = Camera(port=video_port, pitch=self.pitch)
@@ -71,7 +70,7 @@ class Controller:
 		self.GUI = GUI(calibration=self.calibration, arduino=self.arduino, pitch=self.pitch)
 
 		# Set up main planner
-		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, gui=self.GUI)
+		self.planner = Planner(our_side=our_side, pitch_num=self.pitch, our_color=color, gui=self.GUI, comm = self.arduino)
 
 		self.color = color
 		self.side = our_side
@@ -82,8 +81,8 @@ class Controller:
 	#it doesn't matter whether it is an Attacker or a Defender Controller
 		self.controller = Attacker_Controller(self.planner._world, self.GUI)
 
-		self.robot_action_list = []
 
+		self.robot_action_list = []
 
 
 
@@ -100,9 +99,8 @@ class Controller:
 
 				frame = self.camera.get_frame()
 				pre_options = self.preprocessing.options
-				#preprocessed = self.preprocessing.normalize(frame, self.pitch)
 				# Apply preprocessing methods toggled in the UI
-				preprocessed = self.preprocessing.run(frame, self.pitch,  pre_options)
+				preprocessed = self.preprocessing.run(frame, pre_options)
 				frame = preprocessed['frame']
 				if 'background_sub' in preprocessed:
 					cv2.imshow('bg sub', preprocessed['background_sub'])
@@ -115,7 +113,6 @@ class Controller:
 				# Find appropriate action
 				self.planner.update_world(model_positions)
 				
-
 				if time.time() >= self.timeOfNextAction:
 					if self.robot_action_list == []:
 						plan = self.planner.plan()
@@ -150,6 +147,10 @@ class Controller:
 				   "we dont need it", '', "we dont need it", grabbers,
 					our_color='blue', our_side=self.side, key=c, preprocess=pre_options)
 				counter += 1
+
+				if c == ord('a'):
+					self.arduino.grabberUp()
+					self.arduino.grab()
 
 		except:
 			if self.controller is not None:
@@ -194,6 +195,9 @@ class Attacker_Controller(Robot_Controller):
 		self.gui = gui
 		
 	def setSpeed(self, i):
+		if self.gui.getSpeedMultiplier() == 10:
+			return min(7, i+3)
+
 		return max(i, int(i * float(self.gui.getSpeedMultiplier()) / 10))
 
 	def execute(self, comm, controller):
@@ -207,9 +211,9 @@ class Attacker_Controller(Robot_Controller):
 			return
 
 		slow_speed = self.setSpeed(1)
-		turn_speed = self.setSpeed(4)
+		turn_speed = self.setSpeed(2)
 		turn_speed_slow = self.setSpeed(2)
-		turn_speed_aiming = self.setSpeed(1)
+		turn_speed_aiming = self.setSpeed(3)
 		fast_speed = self.setSpeed(4)
 		
 
@@ -242,11 +246,11 @@ class Attacker_Controller(Robot_Controller):
 		elif action == 'turn_left_slow':
 
 		  
-			comm.drive(-turn_speed_slow, turn_speed_slow+1)
+			comm.drive(-turn_speed_slow, min(7, turn_speed_slow+1))
 
 		elif action == 'turn_right_slow':
 		  
-			comm.drive(turn_speed_slow, -turn_speed_slow-1)
+			comm.drive(turn_speed_slow, max(-7, -turn_speed_slow-1))
 
 		elif action == 'turn_left_aiming':
 
@@ -259,21 +263,21 @@ class Attacker_Controller(Robot_Controller):
 
 		elif action == 'backwards':
 		  
-			comm.drive(-slow_speed, -slow_speed-2)
+			comm.drive(-slow_speed, max(-7, -slow_speed-2))
 
 		elif action == 'backwards_intercept':
 		  
-			comm.drive(-fast_speed+1, -fast_speed-1)	
+			comm.drive(-fast_speed+1, max(-7, -fast_speed-1))
 
 		elif action == 'drive':
 		  
-			comm.drive(fast_speed, fast_speed+1)
+			comm.drive(fast_speed, min(7, fast_speed+1))
 		elif action == 'drive_intercept':
 		  
 			comm.drive(fast_speed-2, fast_speed-1)	
 		elif action == 'drive_slow':
 		  
-			comm.drive(slow_speed, slow_speed+1)
+			comm.drive(slow_speed, min(7, slow_speed+1))
 		elif action == 'turn_left_go':
 			comm.drive(fast_speed-2, fast_speed)
 		elif action == 'turn_right_go':
